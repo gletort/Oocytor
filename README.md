@@ -5,6 +5,7 @@ Fiji plugin to segment oocyte and zona pellucida contours from transmitted light
  
  * [Presentation](#presentation)
 	* [Segmentation](#segmentation)
+	* [Find NEBD](#find-nebd)
 	* [Features](#features)
  * [Installation](#installation)
 	* [Usage](#use)
@@ -40,6 +41,15 @@ To perform the segmentation, we used neural networks trained on thausend images 
 Our trained neural networks are available in this github in the models folder. They should be placed in a `models` folder in the Fiji directory (see [Installation](#installation)). They can be used as pre-trained networks to retrain it with only a few new images. New networks (retrain or new architecture network) can be used by oocytor plugin by replacing the `oocyte*.zip` folders by your own networks in the corresponding folders (`models/cortex` or `models/zp`). The names has to be kept the same.
 
 ### Features
+
+### Find NEBD
+
+This option of the plugin allows to automatically detect at which slice of a stack of images the oocyte enters in meiosis and break the nuclear enveloppe (NEBD).
+For this, it uses a neural network that was trained to recognize in each image if there is a visible nucleus or not.
+Then it calculates the moment that the nucleus disappear based on the probability of presence of the nucleus from the network output.
+
+*Remark:* this neural network has been trained only with mouse oocyte datas and thus will most likely fail with other oocyte species if the nucleus doesn't have the same appearance.
+It can be used as a pretrain network to retrain it with different oocytes.
 
 ## Installation
 
