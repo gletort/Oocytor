@@ -67,3 +67,10 @@ We put in the [`macros`](./macros "macros folder") folder of this repository sev
 * `Oocytor_WriteOoCyteCenterPosition.ijm` writes the position of the ROIs cortex of the oocyte (found by oocytor) at all time/z points if it is stack of images for all the files of a given directory.
 
 Other macros will be added while developping `Oocytor` and of course feel free to add yours.
+
+## References
+
+## Remarks
+
+This plugin was developped in the [Terret/Verlhac](https://www.college-de-france.fr/site/en-cirb/Terret-Verlhac.htm "website team") team and the imaging facility [Orion] (http://orion-cirb.fr/ "orion website") at the Centre de Recherche Interdisciplinaire en Biologie in the College de France.
+`Oocytor` is freely available open-source under the GNU GPL v3.0 License (see License file). 
