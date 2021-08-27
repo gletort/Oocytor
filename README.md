@@ -3,10 +3,9 @@ Fiji plugin to segment oocyte and zona pellucida contours from transmitted light
 
 ![image Oocytor](./imgs/oo_logo.png?raw=true "Oocytor logo")
  
-Overview:
-
  * [Presentation](#presentation)
  * [Installation](#installation)
+ * [Macros](#macros)
  * [References](#references)
  * [Remarks](#remarks)
 
@@ -15,6 +14,9 @@ Oocytor is a Fiji plugin (developped in Java). It offers the possibility to segm
 
 
 ### Segmentation
+`Oocytor` uses neural networks for the segmentation. It was trained with images of individual oocytes placed in the center at different resolutions.
+Hence, to use it you need to have a unique full oocyte in the image. When you have several oocytes in the same image, it is possible to separate them automatically with our [individualize macro](#macros "macro"). 
+
 #### Oocyte contour segmentation
 The plugin option `Get cortex` detects the oocyte contour of all images/stacks in a chosen folder and returns the oocyte contour as ROIs which are saved in a folder named `contours` automatically created in the given folder.
 ![image cortex segmentation](./imgs/cortexseg.png?raw=true "Example of cortex segmentation")
@@ -44,6 +46,19 @@ For this, copy the `models` folder in the main Fiji directory (or insert it in t
 Oocytor uses other Fiji plugins which you may have to install if they are not already installed. See the following section.
 
 ### Dependencies
+Oocytor uses the following Fiji plugins:
+* [CSBDeep_fiji](https://github.com/CSBDeep/CSBDeep_fiji#imagej-update-site "CSBDeep install"): this plugin is used in the segmentation part. To install it, add it in Fiji update sites (go to `Help>Update..`, clik on `Manage update sites`, look for `CSBDeep` and select it)
+* [FeatureJ](https://imagescience.org/meijering/software/featurej/ "FeatureJ website"): this plugin in the features part only. Add the `.jar` files given in FeatureJ website to the `plugins` folder of Fiji.		
 
 ### Use
 Once installed, the plugin can be found in Fiji in the `Plugins>CIRB>Oocytor` menu.
+
+### Macros
+We put in the [`Macros`](./Macros "macros folder") folder of this repository several ImageJ/Fiji macros that can be usefull to automatize some parts of using `Oocytor` on several files for example.
+* `Oocytor_DisplayROIs.ijm` ask to choose a file and open it with the corresponding segmentation ROIs if they have been done.
+* `Oocytor_DrawROI.ijm` open and draw the corresponding segmentation ROIs on one slice or on the full stack, for one image or all images of a folder. The color of the drawing (red for cortex and orange for zona pellucida) can be changed in the code of the macro.
+* `Oocytor_individualizeOocytes.ijm` find all the oocytes in a stack/images containing several ones and create new stack/images of cropped region containing only one full oocyte in the center. 
+* `Oocytor_runAll.ijm` performs directly all the steps of `Oocytor` analysis (cortex and zp segmentation, NEBD detection and features extraction) on a given file/directory.
+* `Oocytor_WriteOoCyteCenterPosition.ijm` writes the position of the ROIs cortex of the oocyte (found by oocytor) at all time/z points if it is stack of images for all the files of a given directory.
+
+Other macros will be added while developping `Oocytor` and of course feel free to add yours.
