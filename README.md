@@ -4,7 +4,10 @@ Fiji plugin to segment oocyte and zona pellucida contours from transmitted light
 ![image Oocytor](./imgs/oo_logo.png?raw=true "Oocytor logo")
  
  * [Presentation](#presentation)
+	* [Segmentation](#segmentation)
+	* [Features](#features)
  * [Installation](#installation)
+	* [Usage](#use)
 	* [Macros](#macros)
  * [References](#references)
  * [Remarks](#remarks)
