@@ -72,5 +72,5 @@ Other macros will be added while developping `Oocytor` and of course feel free t
 
 ## Remarks
 
-This plugin was developped in the [Terret/Verlhac](https://www.college-de-france.fr/site/en-cirb/Terret-Verlhac.htm "website team") team and the imaging facility [Orion] (http://orion-cirb.fr/ "orion website") at the Centre de Recherche Interdisciplinaire en Biologie in the College de France.
+This plugin was developped in the [Terret/Verlhac](https://www.college-de-france.fr/site/en-cirb/Terret-Verlhac.htm "website team") team and the imaging facility [Orion](http://orion-cirb.fr/ "orion website") at the Centre de Recherche Interdisciplinaire en Biologie in the College de France.
 `Oocytor` is freely available open-source under the GNU GPL v3.0 License (see License file). 
