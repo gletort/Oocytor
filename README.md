@@ -48,6 +48,8 @@ You also need to put the neural networks for the segmentation in Fiji.
 For this, copy the `models` folder in the main Fiji directory (or insert it in the `models` folder of Fiji if it exists already).
 Oocytor uses other Fiji plugins which you may have to install if they are not already installed. See the following section.
 
+You can also download the source code and compile it directly. As a lot of Fiji plugins, it is organized as a `Maven` project.
+
 ### Dependencies
 Oocytor uses the following Fiji plugins:
 * [CSBDeep_fiji](https://github.com/CSBDeep/CSBDeep_fiji#imagej-update-site "CSBDeep install"): this plugin is used in the segmentation part. To install it, add it in Fiji update sites (go to `Help>Update..`, clik on `Manage update sites`, look for `CSBDeep` and select it)
