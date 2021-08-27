@@ -5,7 +5,7 @@ Fiji plugin to segment oocyte and zona pellucida contours from transmitted light
  
  * [Presentation](#presentation)
  * [Installation](#installation)
- * [Macros](#macros)
+	* [Macros](#macros)
  * [References](#references)
  * [Remarks](#remarks)
 
@@ -54,7 +54,7 @@ Oocytor uses the following Fiji plugins:
 Once installed, the plugin can be found in Fiji in the `Plugins>CIRB>Oocytor` menu.
 
 ### Macros
-We put in the [`Macros`](./Macros "macros folder") folder of this repository several ImageJ/Fiji macros that can be usefull to automatize some parts of using `Oocytor` on several files for example.
+We put in the [`macros`](./macros "macros folder") folder of this repository several ImageJ/Fiji macros that can be usefull to automatize some parts of using `Oocytor` on several files for example.
 * `Oocytor_DisplayROIs.ijm` ask to choose a file and open it with the corresponding segmentation ROIs if they have been done.
 * `Oocytor_DrawROI.ijm` open and draw the corresponding segmentation ROIs on one slice or on the full stack, for one image or all images of a folder. The color of the drawing (red for cortex and orange for zona pellucida) can be changed in the code of the macro.
 * `Oocytor_individualizeOocytes.ijm` find all the oocytes in a stack/images containing several ones and create new stack/images of cropped region containing only one full oocyte in the center. 
