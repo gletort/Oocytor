@@ -42,6 +42,9 @@ Our trained neural networks are available in this github in the models folder. T
 
 ### Features
 
+Hundred features are implemented in `Oocytor` like the oocyte perimeter, circularity, Haralick's features to characterize the oocyte texture... A list is given in the corresponding publication, and some will be added with the evolution of `Oocytor`.
+
+
 ### Find NEBD
 
 This option of the plugin allows to automatically detect at which slice of a stack of images the oocyte enters in meiosis and break the nuclear enveloppe (NEBD).
