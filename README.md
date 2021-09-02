@@ -53,7 +53,7 @@ It can be used as a pretrain network to retrain it with different oocytes.
 
 ## Installation
 
-A compiled version is available in this release as a `.jar` file called [`oocytor_0.0.jar`](./oocytor/src/target/ "File link"). To install it, simply put this file in the `plugins` folder of ImageJ/Fiji and restart Fiji. 
+A compiled version is available in this release as a `.jar` file called [`oocytor_0.0.jar`](./oocytor/ "File link"). To install it, simply put this file in the `plugins` folder of ImageJ/Fiji and restart Fiji. 
 You also need to put the neural networks for the segmentation in Fiji. 
 For this, copy the `models` folder in the main Fiji directory (or insert it in the `models` folder of Fiji if it exists already).
 Oocytor uses other Fiji plugins which you may have to install if they are not already installed. See the following section.
