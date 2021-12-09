@@ -2,13 +2,13 @@
 // author: Gaëlle Letort, Terret/Verlhac team, CIRB, Collège de France
 
 drawCortex = 1; // put to 0 not to draw it
-drawZP = 1;     // put to 0 not to draw it
+drawZP = 0;     // put to 0 not to draw it
 slice = 1;     // slice on which to draw. Put -1 to draw on all slices
-saveImg = 0;    // save the resulting image or stack in a new folder
+saveImg = 1;    // save the resulting image or stack in a new folder
 
-doFolder = 0;  // put to 0 to do only one file, 1 to process a whole folder
+doFolder = 1;  // put to 0 to do only one file, 1 to process a whole folder
 
-run("Line Width...", "line=5");  // width of the drawing line
+run("Line Width...", "line=3");  // width of the drawing line
 
 if ( doFolder==0)
 {
@@ -18,7 +18,7 @@ if ( doFolder==0)
 	dir = getDirectory("Choose folder to process");
 	filelist = getFileList(dir);
 	for(i = 0; i < filelist.length; i++) {
-		if (endsWith(filelist[i], ".tif") ) {
+		if (endsWith(filelist[i], ".tif") || endsWith(filelist[i], ".png") ) {
 			file = dir + filelist[i];
 			drawOneFile(file);
 		}
@@ -30,11 +30,10 @@ function drawOneFile(filename)
 {
 	rootname = File.getNameWithoutExtension(filename);
 	path = File.getDirectory(filename);
-	if (!endsWith(filename, ".tif")) { print("Not a tif file"); exit; } 
+	if (!endsWith(filename, ".tif") & !endsWith(filename, ".png") ) { print("Not a tif or png file"); exit; } 
 	// create output directory
 	outDir = path + "drawROI"+ File.separator();
 	if (!File.isDirectory(outDir)) {File.makeDirectory(outDir); }
-
 
 	open(filename);
 	run("RGB Color");
@@ -42,11 +41,27 @@ function drawOneFile(filename)
 	if ( roiManager("count")>0 ) roiManager("reset");
 	// Open ROIs
 	nzp = 0;
+	doCortex = drawCortex;
+	doZP = drawZP;
 	if (drawCortex>0) { 
-		roiManager("Open", path+"contours"+File.separator()+rootname+"_UnetCortex.zip");
-		nzp = roiManager("count");
+		cortpath = path+"contours"+File.separator()+rootname+"_UnetCortex.zip";
+		if (! File.exists(cortpath) ) { 
+			print("No cortex segmentation associated with file "+rootname);  
+			doCortex = 0;
+		} else {
+			roiManager("Open", cortpath);
+			nzp = roiManager("count");
+		}
 	}
-	if (drawZP>0) roiManager("Open", path+"contours"+File.separator()+rootname+"_ZP.zip");
+	if (drawZP>0) {
+		zppath = path+"contours"+File.separator()+rootname+"_ZP.zip";
+		if (! File.exists(zppath) ) { 
+			print("No ZP segmentation associated with file "+rootname);  
+			doZP = 0;
+		} else {
+		roiManager("Open", zppath);
+		}
+	}
 
 	// one slice or all stack ?
 	dep = slice;
@@ -59,7 +74,7 @@ function drawOneFile(filename)
 	{
 		setSlice(i);
 		
-		if (drawZP>0)
+		if ((drawZP>0) & (doZP>0))
 		{
 			roiManager("select", nzp+2*(i-1));
 			setForegroundColor(100, 210, 80);   // iner ZP color in RGB
@@ -68,7 +83,7 @@ function drawOneFile(filename)
 			run("Draw", "slice");
 			roiManager("Deselect");
 		}
-		if (drawCortex>0)
+		if ((drawCortex>0) & (doCortex>0))
 		{
 			roiManager("select", i-1);
 			setForegroundColor(180, 80, 255);  // Cortex color in RGB
@@ -80,7 +95,7 @@ function drawOneFile(filename)
 	run("Select None");
 
 	// Save results
-	if (saveImg)
+	if (saveImg>0)
 	{
 		if ( slice==-1) { saveAs(".tif", outDir+rootname+"_rois.tif"); }
 		else {
