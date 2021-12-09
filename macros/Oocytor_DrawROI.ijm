@@ -1,14 +1,14 @@
 // Macro to open a stack and draw the cortex and ZP ROIs calculated by Oocytor plugin on a given slice or all images
 // author: Gaëlle Letort, Terret/Verlhac team, CIRB, Collège de France
 
-drawCortex = 0; // put to 0 not to draw it
+drawCortex = 1; // put to 0 not to draw it
 drawZP = 1;     // put to 0 not to draw it
-slice = 10;     // slice on which to draw. Put -1 to draw on all slices
+slice = 1;     // slice on which to draw. Put -1 to draw on all slices
 saveImg = 0;    // save the resulting image or stack in a new folder
 
 doFolder = 0;  // put to 0 to do only one file, 1 to process a whole folder
 
-run("Line Width...", "line=3");  // width of the drawing line
+run("Line Width...", "line=5");  // width of the drawing line
 
 if ( doFolder==0)
 {
@@ -58,19 +58,20 @@ function drawOneFile(filename)
 	for (i=dep; i<=end; i++)
 	{
 		setSlice(i);
-		if (drawCortex>0)
-		{
-			roiManager("select", i-1);
-			setForegroundColor(255, 15, 10);  // Cortex color in RGB
-			run("Draw", "slice");
-			roiManager("Deselect");
-		}
+		
 		if (drawZP>0)
 		{
 			roiManager("select", nzp+2*(i-1));
-			setForegroundColor(255, 150, 30);   // iner ZP color in RGB
+			setForegroundColor(100, 210, 80);   // iner ZP color in RGB
 			run("Draw", "slice");
-			roiManager("select", nzp+2*(i-1)+1);  // outer ZP color in RGB
+			roiManager("select", nzp+2*(i-1)+1);  // outer ZP 
+			run("Draw", "slice");
+			roiManager("Deselect");
+		}
+		if (drawCortex>0)
+		{
+			roiManager("select", i-1);
+			setForegroundColor(180, 80, 255);  // Cortex color in RGB
 			run("Draw", "slice");
 			roiManager("Deselect");
 		}
