@@ -91,7 +91,7 @@ public class Utils
 		rm.runCommand( imp, "Sort" );
 		Roi[] allRois = rm.getRoisAsArray();
 		int curz;
-		int	wini = 0;
+		int wini = 0;
 		int doingz = -1;
 		double refmes = 0;
 		int mesure = 0;

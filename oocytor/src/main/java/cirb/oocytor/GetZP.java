@@ -30,10 +30,14 @@ package cirb.oocytor;
 
 import ij.*;
 import ij.gui.*;
+import ij.io.LogStream;
 import ij.plugin.*;
 import ij.plugin.frame.*;
 import ij.measure.*;
+import java.awt.Color;
+import java.awt.Font;
 import java.io.*;
+import javax.swing.ImageIcon;
 
 public class GetZP implements PlugIn 
 {
@@ -44,6 +48,9 @@ public class GetZP implements PlugIn
 	String modeldir;
 	Utils util;
         int nnet = 2;
+        Network net;
+        final ImageIcon icon = new ImageIcon(this.getClass().getResource("/oo_logo.png"));
+        boolean visible = false;
 
 
 	/** Initialisation of an image */
@@ -56,7 +63,7 @@ public class GetZP implements PlugIn
 			imp = IJ.openImage(imgname);
 		//imp = IJ.getImage();
 		cal = util.initCalibration(imp);
-		imp.show();
+		if (visible) imp.show();
 		rm.runCommand(imp,"Deselect");
 		rm.reset();
 		util.unselectImage(imp);
@@ -260,16 +267,18 @@ public class GetZP implements PlugIn
 		
 		/// smooth, remove extreme rads and replace by neighbors
 		ang = 0;
+                float[] res = new float[2];
 		for (int j=0; j<nang; j++)
 		{	
 			ang = ang + dang;
-			float[] res = smoothExtremeRadius(fcx, fcy, ang, frads, j, true, true);
+			res = smoothExtremeRadius(fcx, fcy, ang, frads, j, true, true);
 			fxpts[j] = res[0];
 			fypts[j] = res[1];
-			float[] lres = smoothExtremeRadius(lcx, lcy, ang, lrads, j, true, true);
-			lxpts[j] = lres[0];
-			lypts[j] = lres[1];
+			res = smoothExtremeRadius(lcx, lcy, ang, lrads, j, true, true);
+			lxpts[j] = res[0];
+			lypts[j] = res[1];
 		}
+                res = null;
 
 		/// Construct and add the two Roi
 		Roi froi = new PolygonRoi( fxpts, fypts, Roi.POLYGON);
@@ -289,7 +298,7 @@ public class GetZP implements PlugIn
 
 	public void getZPFromUnet(ImagePlus bin)
 	{   
-            bin.show();
+            if (visible) bin.show();
 	    
             // get ratio of sizes
             double wratio = ((double)(imp.getWidth()))/bin.getWidth();
@@ -298,8 +307,10 @@ public class GetZP implements PlugIn
 
             // clean small areas
             cleanSmallRois(bin);	
-            bin.hide();
-            imp.hide();
+            if (visible) {
+                bin.hide();
+                imp.hide();
+            }
             for ( int i = 1; i <= imp.getNSlices(); i++ )
             {
                 IJ.showStatus("Refine ZP Rois... "+i+"/"+imp.getNSlices());
@@ -319,8 +330,7 @@ public class GetZP implements PlugIn
 	    util.reOrder(imp);
          
             // run neural network for segmentation
-            Network net = new Network();
-	    ImagePlus unet = net.runUnet(imp, dir+inname, nnet, modeldir, 800, true);
+            ImagePlus unet = net.runUnet(imp, dir+inname, nnet, modeldir, 800, visible);
 		
             // extract contours from the binary image, smooth a little
             IJ.showStatus("Refine ZP Rois...");
@@ -332,14 +342,33 @@ public class GetZP implements PlugIn
             util.close(imp);	
 	}
 
+       
         /** \brief Dialog window 
-        @return true if no pb, false else
-         */
+	  @return true if no pb, false else
+	  */
 	public boolean getParameters()
 	{
-            dir = IJ.getDirectory("Choose images directory:");	
-            return true;
-        }
+		GenericDialog gd = new GenericDialog("Options", IJ.getInstance() );
+		Font boldy = new Font("SansSerif", Font.CENTER_BASELINE, 15);
+		gd.setFont(boldy);
+		//gd.addMessage("----------------------------------------------------------------------------------------------- ");
+		
+		gd.addNumericField("nb_networks :", nnet);
+		gd.addCheckbox("visible_mode", visible);
+		gd.setBackground(new Color(100,140,170));
+                gd.setInsets​(-100, 240, 0);
+		ImagePlus iconimg = new ImagePlus();
+		iconimg.setImage(icon.getImage());
+		gd.addImage(iconimg);
+
+		gd.showDialog();
+		if (gd.wasCanceled()) return false;
+
+		nnet = (int) gd.getNextNumber();
+		visible = gd.getNextBoolean();
+		dir = IJ.getDirectory("Choose images directory:");	
+		return true;
+	}
 		
         public void run(String arg)
 	{
@@ -353,6 +382,9 @@ public class GetZP implements PlugIn
 		util = new Utils();
 		
                 modeldir = IJ.getDirectory("imagej")+"/models/"+arg+"/";
+                net = new Network();
+                net.init();
+               
                 // Performs on all images in chosen directory
 		File thedir = new File(dir); 
 		File[] fileList = thedir.listFiles(); 
@@ -373,10 +405,13 @@ public class GetZP implements PlugIn
                         {
                             getZP( inname );
                         }
-                        System.gc(); // garbage collector
+                          System.gc(); // garbage collector
                     }
                 }
             }
+            net.end();
+            net = null;
+            System.gc();
 	}
 
 

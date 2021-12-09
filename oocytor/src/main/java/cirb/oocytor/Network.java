@@ -6,6 +6,8 @@ import ij.plugin.Concatenator;
 import ij.plugin.ImageCalculator;
 import ij.plugin.SubstackMaker;
 import ij.process.ImageStatistics;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import net.imagej.ImageJ;
 import java.util.HashMap;
 import java.util.concurrent.Future;
@@ -38,10 +40,30 @@ import org.scijava.command.CommandModule;
     You should have received a copy of the GNU General Public License
  */
 public class Network {
-    
-   
-       
-    private void checkForCSBDeep() {
+             SubstackMaker sub = new SubstackMaker();
+             Concatenator cont = new Concatenator();
+             final ImageJ ij = new ImageJ(); 
+             DatasetService datasetIJ;
+             final AxisType[] axes = new AxisType[]{Axes.X, Axes.Y, Axes.TIME};
+             final HashMap<String, Object> paramsCNN = new HashMap<>();
+             PrintStream nothing = new NullPrintStream();
+                 
+        public void init() {
+            checkForCSBDeep();
+             ij.launch();
+             datasetIJ = ij.dataset();
+              paramsCNN.put("normalizeInput", true);
+              paramsCNN.put("percentileBottom", 0);
+              paramsCNN.put("percentileTop", 100);
+              paramsCNN.put("clip", false);
+              paramsCNN.put("nTiles", 1);
+              paramsCNN.put("blockMultiple", 256);
+              paramsCNN.put("overlap", 0);
+              paramsCNN.put("batchSize", 30);
+              paramsCNN.put("showProgressDialog", false);   
+        }
+        
+              private void checkForCSBDeep() {
         try {
             Class.forName("de.csbdresden.csbdeep.commands.GenericNetwork");
         } catch (ClassNotFoundException e) {
@@ -49,24 +71,18 @@ public class Network {
             throw new RuntimeException("CSBDeep not installed");
         }
     }
-
-        
+   
 	public ImagePlus loadNetwork(int i, ImagePlus imp, String modeldir, int subst)
 	{
+            
+            System.setOut(nothing);   
             ImagePlus result = null;
             try
-            {   
-             checkForCSBDeep();
+            {    
     
-             String tmpfile = modeldir+"tmp.tif";
              int tsep = imp.getNSlices();
-             if (tsep>subst) tsep = subst;
-             
+             if (tsep>subst) tsep = subst;     
              int end = 1;
-             SubstackMaker sub = new SubstackMaker();
-             Concatenator cont = new Concatenator();
-             final ImageJ ij = new ImageJ();
-             ij.launch();
                  
              while( end<=imp.getNSlices() )
              {
@@ -75,29 +91,13 @@ public class Network {
                 ImagePlus tmp = sub.makeSubstack(imp, end+"-"+step);
                 //System.out.println(end+" "+step);
                 end = step+1;
-                //IJ.saveAs(tmp, "Tiff", tmpfile);
-                //tmp.changes = false;
-                //tmp.close();
-                final AxisType[] axes = new AxisType[]{Axes.X, Axes.Y, Axes.TIME};
                 final Img inputImg = (Img) ImageJFunctions.wrap(tmp);
-                DatasetService datasetIJ = ij.dataset();
                 Dataset dataset = datasetIJ.create(new ImgPlus(datasetIJ.create(inputImg), "input", axes));
-            
-//        IJ.saveAs(imp, "Tiff", modeldir+"tmp.tif");
-
-                 //Dataset dataset = ij.scifio().datasetIO().open(tmpfile);
-                 final HashMap<String, Object> paramsCNN = new HashMap<>();
-                 paramsCNN.put("input", dataset);
-                 paramsCNN.put("normalizeInput", true);
-                 paramsCNN.put("percentileBottom", 0);
-                 paramsCNN.put("percentileTop", 100);
-                 paramsCNN.put("clip", false);
-                 paramsCNN.put("nTiles", 1);
-                 paramsCNN.put("blockMultiple", 256);
-                 paramsCNN.put("overlap", 0);
-                 paramsCNN.put("batchSize", 30);
-                 paramsCNN.put("showProgressDialog", false);
-                 paramsCNN.put("modelFile", modeldir+"oocyte"+i+".zip");        
+                tmp.changes = false;
+                tmp.close();
+                
+                paramsCNN.put("input", dataset);
+                paramsCNN.put("modelFile", modeldir+"oocyte"+i+".zip");        
                 final Future<CommandModule> futureCNN = ij.command().run(de.csbdresden.csbdeep.commands.GenericNetwork.class, false, paramsCNN);
                 Dataset prediction = (Dataset) futureCNN.get().getOutput("output");
                 ImgPlus implus = prediction.getImgPlus();
@@ -116,6 +116,7 @@ public class Network {
                     result = tog;
                 }
                 else result = partresult;
+                
                 dataset = null;
                 prediction = null;
                 implus = null;
@@ -127,6 +128,8 @@ public class Network {
                 IJ.error("Problem loading neural network\n "+e.toString()+"\n "+e.getMessage());
                 return null;
             }
+            
+            System.setOut(System.out);
             return result; 
           }
         
@@ -164,11 +167,7 @@ public class Network {
 	    for ( int i = 0; i < nnet; i++ )
 	    {
 		 ImagePlus bin = loadNetwork(i, resized, modeldir, subst);
-                 /**if (i>=1){
-                     bin.show();
-                      res.show();
-                IJ.run("stop");
-                 }*/
+ 
 		  if ( i >= 1) calc.run("add 32-bit stack", res, bin);
                   else res = (ImagePlus) (bin.duplicate());
                   //res.show();
@@ -184,6 +183,10 @@ public class Network {
 	    return res;
         }
 
+        public void end(){
+            ij.dispose();
+            paramsCNN.clear();
+        }
 
     public void run() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

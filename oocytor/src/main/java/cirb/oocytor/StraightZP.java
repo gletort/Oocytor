@@ -170,6 +170,7 @@ public class StraightZP
 		}
 		myrt.addValue("ZPTubularStructureVertical", stat.mean);
 		
+                //new WaitForUserDialog("save").show();
 		closeImage(res);
 	}
 

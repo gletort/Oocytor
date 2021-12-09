@@ -53,6 +53,7 @@ public class GetCortex implements PlugIn
 	String dir = "";
 	String modeldir = "";
 	Utils util;
+        Network net;
 
 	int threshold = 100;
 	int smoothRes = 5;
@@ -276,8 +277,6 @@ public class GetCortex implements PlugIn
 		IJ.run(imp, "Invert", "stack");
 
 		// Enhance structures
-		ImagePlus dup = new Duplicator().run(imp);
-		//dup.show();
 		ImagePlus vert = new Duplicator().run(imp);
 		//vert.show();
 		IJ.run(vert, "Convolve...", "text1=[-1 0 1\n-1 0 1\n-1 0 1] normalize stack");
@@ -287,7 +286,6 @@ public class GetCortex implements PlugIn
 		ImageCalculator calc = new ImageCalculator();
 		calc.run("Add stack", vert, hor);
 		util.close(hor);
-		util.close(dup);
 		calc.run("Average stack", imp, vert);
 		calc.run("Average stack", imp, vert);
 		util.close(vert);
@@ -353,10 +351,11 @@ public class GetCortex implements PlugIn
 		util.reOrder(imp);
 
 		IJ.showStatus("Segment oocyte with neural networks...");
-		Network net = new Network();
+		//Network net = new Network();
 		ImagePlus unet = net.runUnet(imp, dir+inname, nnet, modeldir, 800, visible);
 		if ( visible ) unet.show();
-
+                //net = null;
+                
 		// extract contours from the binary image, smooth a little
 		getCortexFromUnet(unet);
 		IJ.run(imp, "Select None", "");
@@ -365,6 +364,8 @@ public class GetCortex implements PlugIn
 		rm.runCommand("Save", dir+"/contours/"+purinname+"_UnetCortex.zip");
 		util.close(imp);	
 	}
+        
+  
 
 	public void run(String arg)
 	{
@@ -377,7 +378,10 @@ public class GetCortex implements PlugIn
 		rm.reset();
 		util = new Utils();
 
-		modeldir = IJ.getDirectory("imagej")+"/models/"+arg+"/";
+                modeldir = IJ.getDirectory("imagej")+"/models/"+arg+"/";
+                net = new Network();
+                net.init();
+                
 		// Performs on all images in chosen directory
 		File thedir = new File(dir); 
 		File[] fileList = thedir.listFiles(); 
@@ -397,12 +401,15 @@ public class GetCortex implements PlugIn
 					if ( extension.equals(".tif") | extension.equals(".TIF") | extension.equals(".png") | extension.equals(".jpg") | extension.equals(".JPG") )
 					{
 						getCortexImage( inname );
-					}
-
+					}   
+                                        
 				}
 				System.gc(); // garbage collector
 			}
 		}
+                net.end();
+                net = null;
+                System.gc(); // garbage collector
 	}
 
 
