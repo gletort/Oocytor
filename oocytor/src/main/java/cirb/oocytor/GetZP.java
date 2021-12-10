@@ -44,7 +44,7 @@ public class GetZP implements PlugIn
 	ImagePlus imp;
 	Calibration cal;
 	RoiManager rm;
-	String dir = "/home/gaelle/Proj/Miv/Embryo/imgs100";
+	String dir;
 	String modeldir;
 	Utils util;
         int nnet = 2;
@@ -325,7 +325,7 @@ public class GetZP implements PlugIn
             IJ.run("Close All", "");
 	    rm.reset();
 
-            String imgname = dir+"/"+inname;
+            String imgname = dir+inname;
 	    openResetImage(imgname);
 	    util.reOrder(imp);
          
@@ -338,7 +338,7 @@ public class GetZP implements PlugIn
             IJ.run(imp, "Select None", "");
             rm.runCommand(imp,"Deselect");
             String purinname = inname.substring(0, inname.lastIndexOf('.'));
-            rm.runCommand("Save", dir+"/contours/"+purinname+"_ZP.zip");
+            rm.runCommand("Save", dir+"contours"+File.separator+purinname+"_ZP.zip");
             util.close(imp);	
 	}
 
@@ -381,14 +381,14 @@ public class GetZP implements PlugIn
 		rm.reset();
 		util = new Utils();
 		
-                modeldir = IJ.getDirectory("imagej")+"/models/"+arg+"/";
+                modeldir = IJ.getDirectory("imagej")+"models"+File.separator+arg+File.separator;
                 net = new Network();
                 net.init();
                
                 // Performs on all images in chosen directory
 		File thedir = new File(dir); 
 		File[] fileList = thedir.listFiles(); 
-		File directory = new File(dir+"/contours");
+		File directory = new File(dir+"contours");
 		if (! directory.exists())
 			directory.mkdir();
 			

@@ -345,7 +345,7 @@ public class GetCortex implements PlugIn
 		IJ.run("Close All", "");
 		rm.reset();
 
-		String imgname = dir+"/"+inname;
+		String imgname = dir+inname;
 		String ext = inname.substring(inname.lastIndexOf('.'));
 		openResetImage(imgname);
 		util.reOrder(imp);
@@ -361,7 +361,7 @@ public class GetCortex implements PlugIn
 		IJ.run(imp, "Select None", "");
 		rm.runCommand(imp,"Deselect");
 		String purinname = inname.substring(0, inname.lastIndexOf('.'));
-		rm.runCommand("Save", dir+"/contours/"+purinname+"_UnetCortex.zip");
+		rm.runCommand("Save", dir+"contours"+File.separator+purinname+"_UnetCortex.zip");
 		util.close(imp);	
 	}
         
@@ -378,14 +378,14 @@ public class GetCortex implements PlugIn
 		rm.reset();
 		util = new Utils();
 
-                modeldir = IJ.getDirectory("imagej")+"/models/"+arg+"/";
+                modeldir = IJ.getDirectory("imagej")+File.separator+"models"+File.separator+arg+File.separator;
                 net = new Network();
                 net.init();
                 
 		// Performs on all images in chosen directory
 		File thedir = new File(dir); 
 		File[] fileList = thedir.listFiles(); 
-		File directory = new File(dir+"/contours");
+		File directory = new File(dir+"contours");
 		if (! directory.exists())
 			directory.mkdir();
 

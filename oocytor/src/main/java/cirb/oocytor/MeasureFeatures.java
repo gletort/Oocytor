@@ -197,7 +197,7 @@ public class MeasureFeatures implements PlugIn
                     myrt.addValue("OoNormCoefVar", mystat.stdDev/mystat.mean);
                     myrt.addResults();
                }
-		myrt.save(resdir+"/"+purname+"_oocyteFeatures.csv");
+		myrt.save(resdir+File.separator+purname+"_oocyteFeatures.csv");
         	imp.changes = false;
 		imp.close();
 	}
@@ -217,7 +217,7 @@ public class MeasureFeatures implements PlugIn
 		rm.reset();
 		IJ.run(imp, "Select None", "");
 		// get ZP Rois and load cortex Roi in RoiManager
-		rm.runCommand("Open", dir+"/contours/"+purname+"_ZP.zip");
+		rm.runCommand("Open", dir+"contours"+File.separator+purname+"_ZP.zip");
 		Roi[] zps = rm.getRoisAsArray();
 		rm.runCommand(imp,"Deselect");
 		rm.reset();
@@ -320,7 +320,7 @@ public class MeasureFeatures implements PlugIn
 		}
 
 		myrt.addResults();
-		myrt.save(resdir+"/"+purname+"_zpFeatures.csv");
+		myrt.save(resdir+File.separator+purname+"_zpFeatures.csv");
       
                 util.close(imp);
 	}
@@ -339,7 +339,7 @@ public class MeasureFeatures implements PlugIn
 		rm.reset();
 		IJ.run(imp, "Select None", "");
 		// get ZP Rois and load cortex Roi in RoiManager
-		rm.runCommand("Open", dir+"/contours/"+purname+"_ZP.zip");
+		rm.runCommand("Open", dir+"contours"+File.separator+purname+"_ZP.zip");
 		Roi[] zps = rm.getRoisAsArray();
 		rm.runCommand(imp,"Deselect");
 		rm.reset();
@@ -391,7 +391,7 @@ public class MeasureFeatures implements PlugIn
 		}
 
 		myrt.addResults();
-		myrt.save(resdir+"/"+purname+"_perivFeatures.csv");
+		myrt.save(resdir+File.separator+purname+"_perivFeatures.csv");
               util.close(imp);
 	}
 
@@ -399,7 +399,7 @@ public class MeasureFeatures implements PlugIn
 	public void calcShapeFluctuations()
 	{
 		// open, reset
-		String imgname = dir+"/"+inname;
+		String imgname = dir+inname;
 		imp = IJ.openVirtual(imgname);
                 purname = inname.substring(0, inname.lastIndexOf('.'));
 		//imp = IJ.getImage();
@@ -407,7 +407,7 @@ public class MeasureFeatures implements PlugIn
 		rm.runCommand(imp,"Deselect");
 		rm.reset();
 		IJ.run(imp, "Select None", "");
-		rm.runCommand("Open", dir+"/contours/"+purname+"_UnetCortex.zip");
+		rm.runCommand("Open", dir+"contours"+File.separator+purname+"_UnetCortex.zip");
 
 		// do by angles
 		int nang = 300;
@@ -446,7 +446,7 @@ public class MeasureFeatures implements PlugIn
 			myrt.addResults();
 		}
 
-		myrt.save(resdir+"/"+purname+"_fluctuationResults.csv");
+		myrt.save(resdir+File.separator+purname+"_fluctuationResults.csv");
 
 		imp.changes = false;
 		imp.close();
@@ -463,7 +463,7 @@ public class MeasureFeatures implements PlugIn
 		rm.runCommand(imp,"Deselect");
 
 		// get tzp Roi
-		rm.runCommand("Open", dir+"/contours/"+purname+"_ZP.zip");
+		rm.runCommand("Open", dir+"contours"+File.separator+purname+"_ZP.zip");
 		rm.runCommand(imp,"Deselect");
 		util.rescaleRois(rm, imp,factxy);
 		Roi[] zps = rm.getRoisAsArray();
@@ -544,7 +544,7 @@ public class MeasureFeatures implements PlugIn
 			
 			myrt.addResults();
 		}
-		myrt.save(resdir+"/"+purname+"_textureFeatures.csv");
+		myrt.save(resdir+File.separator+purname+"_textureFeatures.csv");
         	imp.changes = false;
 		imp.close();
 	}
@@ -559,7 +559,7 @@ public class MeasureFeatures implements PlugIn
 		rm.reset();
 		
 		// get tzp Roi
-		rm.runCommand("Open", dir+"/contours/"+purname+"_ZP.zip");
+		rm.runCommand("Open", dir+"contours"+File.separator+purname+"_ZP.zip");
 		rm.runCommand(imp,"Deselect");
 		util.rescaleRois(rm, imp,factxy);
 		Roi[] zps = rm.getRoisAsArray();
@@ -623,7 +623,7 @@ public class MeasureFeatures implements PlugIn
 
 			myrt.addResults();
 		}
-		myrt.save(resdir+"/"+purname+"_lbpFeatures.csv");
+		myrt.save(resdir+File.separator+purname+"_lbpFeatures.csv");
 
 		imp.changes = false;
 		imp.close();
@@ -649,7 +649,7 @@ public class MeasureFeatures implements PlugIn
 			myrt.addResults();
 		}
 
-		myrt.save(resdir+"/"+purname+"_spatialFeatures.csv");
+		myrt.save(resdir+File.separator+purname+"_spatialFeatures.csv");
 	
 		imp.changes = false;
 		imp.close();
@@ -687,7 +687,7 @@ public class MeasureFeatures implements PlugIn
 
 	public void measurePIV()
 	{
-		String tmpfile = resdir+"/PIVFile.txt";
+		String tmpfile = resdir+File.separator+"PIVFile.txt";
 
 		double factxy = scalexy/pivsize;
 		openImageRois(true, false, factxy, false);
@@ -747,7 +747,7 @@ public class MeasureFeatures implements PlugIn
                 piver.writePIVResults(0, myrt, pivsize/dtime);
 		myrt.addResults();
 
-		myrt.save(resdir+"/"+purname+"_pivFeatures.csv");
+		myrt.save(resdir+File.separator+purname+"_pivFeatures.csv");
 	
 		imp.changes = false;
 		imp.close();
@@ -767,7 +767,7 @@ public class MeasureFeatures implements PlugIn
 		rm.reset();
 		IJ.run(imp, "Select None", "");
 		// get ZP Rois and load cortex Roi in RoiManager
-		rm.runCommand("Open", dir+"/contours/"+purname+"_ZP.zip");
+		rm.runCommand("Open", dir+"contours"+File.separator+purname+"_ZP.zip");
 		Roi[] zps = rm.getRoisAsArray();
 		rm.runCommand(imp,"Deselect");
 		rm.reset();
@@ -800,13 +800,13 @@ public class MeasureFeatures implements PlugIn
 		
 		util.close(imp);
 		myrt.addResults();
-		myrt.save(resdir+"/"+purname+"_zpTubeFeatures.csv");
+		myrt.save(resdir+File.separator+purname+"_zpTubeFeatures.csv");
 	}
 
 	public void openImageRois(boolean openCortex,  boolean openErased, double fact, boolean getOut)
 	{
 		// open, reset
-		String imgname = dir+"/"+inname;
+		String imgname = dir+inname;
 		
 		String ext = inname.substring(inname.lastIndexOf('.'));
 		if ( ext.equals(".png") )
@@ -828,13 +828,13 @@ public class MeasureFeatures implements PlugIn
 		//get outside Roi
 		if ( getOut )
                 {
-                    File roiFile = new File(dir+"/contours/"+purname+"_ZP.zip");
+                    File roiFile = new File(dir+"contours"+File.separator+purname+"_ZP.zip");
                     int enl = (int) Math.floor(1.2/scalexy);
-                    if (roiFile.isFile()) outside = util.getOutsideRoi(imp, fact, dir+"/contours/"+purname+"_ZP.zip", rm, enl);
+                    if (roiFile.isFile()) outside = util.getOutsideRoi(imp, fact, dir+"contours"+File.separator+purname+"_ZP.zip", rm, enl);
                     else 
                     {
                         enl = (int) Math.floor(15/scalexy);
-                        outside = util.getOutsideRoi(imp, fact, dir+"/contours/"+purname+"_UnetCortex.zip", rm, enl);
+                        outside = util.getOutsideRoi(imp, fact, dir+"contours"+File.separator+purname+"_UnetCortex.zip", rm, enl);
                     }
                 }
                 
@@ -850,12 +850,12 @@ public class MeasureFeatures implements PlugIn
                 if ( openErased )
 		{	
                     // get erased zones	
-                    File erasedZIP = new File(dir+"/contours/"+purname+"_erased.zip");
+                    File erasedZIP = new File(dir+"contours"+File.separator+purname+"_erased.zip");
                     erasing = false;
                     erased = null;
                     if ( erasedZIP.exists() )
                     {
-                        rm.runCommand("Open", dir+"/contours/"+purname+"_erased.zip");
+                        rm.runCommand("Open", dir+"contours"+File.separator+purname+"_erased.zip");
                         erasing = true;
                         if ( fact > 0 )
                                 util.rescaleRois(rm,imp,fact);
@@ -866,7 +866,7 @@ public class MeasureFeatures implements PlugIn
 
 		if ( openCortex )
 		{
-                    rm.runCommand("Open", dir+"/contours/"+purname+"_UnetCortex.zip");
+                    rm.runCommand("Open", dir+"contours"+File.separator+purname+"_UnetCortex.zip");
                     if ( fact > 0 )
                             util.rescaleRois(rm,imp,fact);
                 }
@@ -935,7 +935,7 @@ public class MeasureFeatures implements PlugIn
 		if ( rm == null ) rm = new RoiManager();
 		util = new Utils();
 
-		resdir = dir+"/measures";
+		resdir = dir+"measures";
 		File directory = new File(resdir);
 		if (! directory.exists())
 			directory.mkdir();
