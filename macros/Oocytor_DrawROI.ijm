@@ -9,6 +9,7 @@ saveImg = 1;    // save the resulting image or stack in a new folder
 doFolder = 1;  // put to 0 to do only one file, 1 to process a whole folder
 
 run("Line Width...", "line=3");  // width of the drawing line
+run("ROI Manager...");
 
 if ( doFolder==0)
 {
@@ -37,7 +38,7 @@ function drawOneFile(filename)
 
 	open(filename);
 	run("RGB Color");
-	run("ROI Manager...");
+	
 	if ( roiManager("count")>0 ) roiManager("reset");
 	// Open ROIs
 	nzp = 0;
