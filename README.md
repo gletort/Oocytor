@@ -82,6 +82,9 @@ We put in the [`macros`](./macros "macros folder") folder of this repository sev
 Other macros will be added while developping `Oocytor` and of course feel free to add yours.
 
 ## References
+**An interpretable and versatile machine learning approach for oocyte phenotyping**
+<br>Gaelle Letort, Adrien Eichmuller, Christelle Da Silva, Elvira Nikalayevich, Elsa Labrune, Jean-Philippe Wolf, Marie-Emilie Terret, Marie-Helene Verlhac
+<br>[bioRxiv 2022.02.01.478709](https://www.biorxiv.org/content/10.1101/2022.02.01.478709v1) doi:10.1101/2022.02.01.478709 
 
 ## Remarks
 
