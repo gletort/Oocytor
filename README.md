@@ -32,6 +32,10 @@ To use it, the plugin ask for 3 parameters:
 
 ![gui cortex](./imgs/interfaceCortex.png?raw=true "Cortex option interface")
 
+##### Models proposed
+We tested different networks trained on either mouse and human data, or on mouse, human and sea urchin data (see our publication for more details).
+In our `models/cortex` folder of this repository, we put the 3 different types of networks available: `full` has been trained with all data, `init` was trained on mouse and human data, and `retrained` was focused on sea urchin data.
+
 #### ZP contour segmentation
 The plugin option `Get ZP` detects the zona pellucida outside and inside contours of all images/stacks in a chosen folder and returns the contours as ROIs which are saved in a folder named `contours` automatically created in the given folder.
 ![image zp segmentation](./imgs/zpseg.png?raw=true "Example of zp segmentation")
