@@ -46,7 +46,7 @@ Our trained neural networks are available in this github in the models folder. T
 
 ### Features
 
-Hundred features are implemented in `Oocytor` like the oocyte perimeter, circularity, Haralick's features to characterize the oocyte texture... A list is given in the repository [`Features list`](./features/ "File link"), and some will be added with the evolution of `Oocytor`.
+Hundred features are implemented in `Oocytor` like the oocyte perimeter, circularity, Haralick's features to characterize the oocyte texture... A list is given in the repository [`Features list`](./SupplementaryMateials_features.pdf "File link"), and some will be added with the evolution of `Oocytor`.
 
 
 ### Find NEBD
