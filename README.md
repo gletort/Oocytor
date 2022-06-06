@@ -10,6 +10,7 @@ Fiji plugin to segment oocyte and zona pellucida contours from transmitted light
  * [Installation](#installation)
 	* [Usage](#use)
 	* [Macros](#macros)
+ * [Dataset](#dataset)
  * [References](#references)
  * [Remarks](#remarks)
 
@@ -84,6 +85,11 @@ We put in the [`macros`](./macros "macros folder") folder of this repository sev
 * `Oocytor_WriteOoCyteCenterPosition.ijm` writes the position of the ROIs cortex of the oocyte (found by oocytor) at all time/z points if it is stack of images for all the files of a given directory.
 
 Other macros will be added while developping `Oocytor` and of course feel free to add yours.
+
+## Dataset
+- Movies of mouse oocytes maturation acquired in transmitted light are available on [zenodo](https://zenodo.org/record/6502852#.Yp3bfyY68nQ). 
+- Dataset of oocytes (mouse, human and sea urchin) with the corresponding segmentation of the cortex are available on [zenodo](https://zenodo.org/record/6502830#.Yp3bJiY68nQ).
+
 
 ## References
 **An interpretable and versatile machine learning approach for oocyte phenotyping**
