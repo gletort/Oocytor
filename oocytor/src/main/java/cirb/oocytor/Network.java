@@ -75,7 +75,7 @@ public class Network {
 	public ImagePlus loadNetwork(int i, ImagePlus imp, String modeldir, int subst)
 	{
             
-            System.setOut(nothing);   
+            //System.setOut(nothing);   
             ImagePlus result = null;
             try
             {    
@@ -97,7 +97,7 @@ public class Network {
                 tmp.close();
                 
                 paramsCNN.put("input", dataset);
-                paramsCNN.put("modelFile", modeldir+"oocyte"+i+".zip");        
+                paramsCNN.put("modelFile", modeldir+"oocyte"+i+".zip"); 
                 final Future<CommandModule> futureCNN = ij.command().run(de.csbdresden.csbdeep.commands.GenericNetwork.class, false, paramsCNN);
                 Dataset prediction = (Dataset) futureCNN.get().getOutput("output");
                 ImgPlus implus = prediction.getImgPlus();

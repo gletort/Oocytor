@@ -38,6 +38,7 @@ public class FindNEBD implements PlugIn
 	String modeldir;
 	Utils util;
         int nnet = 2;
+        Network net;
         
         boolean twins = false;
         
@@ -136,7 +137,7 @@ public class FindNEBD implements PlugIn
             IJ.run("Close All", "");
 	    rm.reset();
 
-            String imgname = dir+"/"+inname;
+            String imgname = dir+inname;
 	    openResetImage(imgname);
 	    util.reOrder(imp);
          
@@ -150,7 +151,7 @@ public class FindNEBD implements PlugIn
             }
             
             // run neural network for segmentation
-            Network net = new Network();
+            //Network net = new Network();
 	    ImagePlus unet = net.runUnet(imp, dir+inname, nnet, modeldir, 250, true);
 		
             // extract contours from the binary image, smooth a little
@@ -175,7 +176,10 @@ public class FindNEBD implements PlugIn
 		rm.reset();
 		util = new Utils();
 		
-                modeldir = IJ.getDirectory("imagej")+"/models/"+arg+"/";
+                modeldir = IJ.getDirectory("imagej")+File.separator+"models"+File.separator+arg+File.separator;
+                net = new Network();
+                net.init();
+                
                 // Performs on all images in chosen directory
 		File thedir = new File(dir); 
 		File[] fileList = thedir.listFiles(); 
