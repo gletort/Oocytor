@@ -32,6 +32,7 @@
 
 package cirb.oocytor;
 
+import fiji.util.gui.GenericDialogPlus;
 import ij.IJ;
 import ij.*;
 import ij.process.*;
@@ -68,7 +69,7 @@ public class GetCortex implements PlugIn
 	  */
 	public boolean getParameters()
 	{
-		GenericDialog gd = new GenericDialog("Options", IJ.getInstance() );
+		GenericDialogPlus gd = new GenericDialogPlus("Options", IJ.getInstance() );
 		Font boldy = new Font("SansSerif", Font.CENTER_BASELINE, 15);
 		gd.setFont(boldy);
 		//gd.addMessage("----------------------------------------------------------------------------------------------- ");
@@ -84,6 +85,9 @@ public class GetCortex implements PlugIn
 		ImagePlus iconimg = new ImagePlus();
 		iconimg.setImage(icon.getImage());
 		gd.addImage(iconimg);
+                
+                gd.addDirectoryField("model_path:", modeldir);
+                gd.addDirectoryField("images_directory:", dir);
 
 		gd.showDialog();
 		if (gd.wasCanceled()) return false;
@@ -93,8 +97,9 @@ public class GetCortex implements PlugIn
 		nnet = (int) gd.getNextNumber();
 		visible = gd.getNextBoolean();
 
-		dir = IJ.getDirectory("Choose images directory:");	
-		return true;
+                modeldir = gd.getNextString();
+		dir = gd.getNextString();	
+                return true;
 	}
 
 
@@ -369,6 +374,8 @@ public class GetCortex implements PlugIn
 
 	public void run(String arg)
 	{
+            
+                modeldir = IJ.getDirectory("imagej")+File.separator+"models"+File.separator+arg+File.separator;
 		// get parameters, initialize
 		if ( !getParameters() ) { return; }
 		IJ.run("Close All");
@@ -378,7 +385,14 @@ public class GetCortex implements PlugIn
 		rm.reset();
 		util = new Utils();
 
-                modeldir = IJ.getDirectory("imagej")+File.separator+"models"+File.separator+arg+File.separator;
+                if (! dir.endsWith(File.separator))
+                {
+                    dir = dir + File.separator;
+                }
+                if (! modeldir.endsWith(File.separator))
+                {
+                    modeldir = modeldir + File.separator;
+                }
                 net = new Network();
                 net.init();
                 

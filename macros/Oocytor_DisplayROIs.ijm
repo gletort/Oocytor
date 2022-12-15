@@ -2,7 +2,7 @@
 // author: Gaëlle Letort, Terret/Verlhac team, CIRB, Collège de France
 
 showCortex = 1; // put to 0 not to show it
-showZP = 1;     // put to 0 not to show it
+showZP = 0;     // put to 0 not to show it
 
 filename = File.openDialog("Choose file to open");
 rootname = File.getNameWithoutExtension(filename);
