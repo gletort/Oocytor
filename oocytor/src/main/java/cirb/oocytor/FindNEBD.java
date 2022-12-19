@@ -1,14 +1,18 @@
 
 package cirb.oocytor;
 
+import fiji.util.gui.GenericDialogPlus;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.measure.Calibration;
 import ij.plugin.PlugIn;
 import ij.plugin.frame.RoiManager;
+import java.awt.Color;
+import java.awt.Font;
 import java.io.File;
 import java.io.PrintWriter;
+import javax.swing.ImageIcon;
 
 /**
  *
@@ -34,12 +38,12 @@ public class FindNEBD implements PlugIn
         ImagePlus imp;
 	Calibration cal;
 	RoiManager rm;
-	String dir = "/home/gaelle/Proj/Miv/Embryo/imgs100";
-	String modeldir;
+	String dir = "";
+	String modeldir = "";
 	Utils util;
         int nnet = 2;
         Network net;
-        
+        final ImageIcon icon = new ImageIcon(this.getClass().getResource("/oo_logo.png"));
         boolean twins = false;
         
         
@@ -48,7 +52,25 @@ public class FindNEBD implements PlugIn
          */
 	public boolean getParameters()
 	{
-            dir = IJ.getDirectory("Choose images directory:");	
+            GenericDialogPlus gd = new GenericDialogPlus("Find NEBD - Options", IJ.getInstance() );
+            Font boldy = new Font("SansSerif", Font.CENTER_BASELINE, 15);
+            gd.setFont(boldy);
+            gd.setBackground(new Color(100,140,170));
+            gd.setInsets​(-100, 240, 0);
+            ImagePlus iconimg = new ImagePlus();
+            iconimg.setImage(icon.getImage());
+            gd.addImage(iconimg);
+            gd.addNumericField("nb_networks :", nnet);
+		
+            gd.addDirectoryField("model_path:", modeldir);
+            gd.addDirectoryField("images_directory:", dir);
+
+            gd.showDialog();
+            if (gd.wasCanceled()) return false;
+            
+            nnet = (int) gd.getNextNumber();	
+	    modeldir = gd.getNextString();
+            dir = gd.getNextString();	
             return true;
         }
         
@@ -167,6 +189,7 @@ public class FindNEBD implements PlugIn
         
         public void run(String arg)
 	{
+             modeldir = IJ.getDirectory("imagej")+File.separator+"models"+File.separator+arg+File.separator;
             // get parameters, initialize
             if (!getParameters()) return;
 		IJ.run("Close All");
@@ -176,9 +199,17 @@ public class FindNEBD implements PlugIn
 		rm.reset();
 		util = new Utils();
 		
-                modeldir = IJ.getDirectory("imagej")+File.separator+"models"+File.separator+arg+File.separator;
+                if (! dir.endsWith(File.separator))
+                {
+                    dir = dir + File.separator;
+                }
+                if (! modeldir.endsWith(File.separator))
+                {
+                    modeldir = modeldir + File.separator;
+                }
                 net = new Network();
                 net.init();
+                
                 
                 // Performs on all images in chosen directory
 		File thedir = new File(dir); 
@@ -206,7 +237,9 @@ public class FindNEBD implements PlugIn
                     }
                 }
             }
-            
+         net.end();
+         net = null;
+         System.gc(); // garbage collector   
          try 
          {
              PrintWriter writer = new PrintWriter(new File(dir+"/nebd_times.csv"));
@@ -215,6 +248,7 @@ public class FindNEBD implements PlugIn
              IJ.showStatus("Done");
          } 
          catch (Exception e) { IJ.error(e.getMessage()); }
+
     }
 
     
