@@ -38,8 +38,8 @@ public class PIV
     
     public PIV()
     {
-        prev = new double[6];
-        val = new double[6];
+        prev = new double[12];
+        val = new double[12];
     }
     
     public void runOneTimeDiff(ImagePlus img, double[] cent, double rad, String tmpfile)
@@ -61,7 +61,7 @@ public class PIV
         if ( i > 0 )
         {
             double tmp = 0.0;
-            for ( int k=0; k <6; k++)
+            for ( int k=0; k <12; k++)
             {
                 tmp = prev[k];
                 prev[k] = val[k];
@@ -69,10 +69,10 @@ public class PIV
                 val[k] /= 2.0;
             }
         }
-         if ( i == 0 )
+        if ( i == 0 )
         {
-            for ( int k=0; k <6; k++) val[k] = prev[k];
-          }
+            for ( int k=0; k <12; k++) val[k] = prev[k];
+        }
       
         myrt.addValue("OoPIVMean", val[0]*scale);
         myrt.addValue("OoPIVStd", val[1]*scale);
@@ -81,6 +81,12 @@ public class PIV
         myrt.addValue("OoPIVMeanEdge", val[3]*scale);
         myrt.addValue("OoPIVAngleCenter", val[4]);
         myrt.addValue("OoPIVAngleEdge", val[5]);
+        myrt.addValue("OoPIVAverageDirection", val[6]);
+        myrt.addValue("OoPIVStrengthDirection", val[7]);
+        myrt.addValue("OoPIVAverageDirectionCenter", val[8]);
+        myrt.addValue("OoPIVAverageDirectionEdge", val[9]);
+        myrt.addValue("OoPIVStrengthDirectionCenter", val[10]);
+        myrt.addValue("OoPIVStrengthDirectionEdge", val[11]);      
     }
     
     // center of Roi and radius for local analysis
@@ -91,7 +97,14 @@ public class PIV
 		double normEdge = 0;
 		double angCent = 0;
 		double angEdge = 0;
-		double x,y, vx, vy, norm, dist, cost;
+                double meanVx = 0;
+                double meanVy = 0;
+                double sumNorm = 0;
+                double meanVxEdge = 0;
+                double meanVyEdge = 0;
+                double meanVxCent = 0;
+                double meanVyCent = 0;
+                double x,y, vx, vy, norm, dist, cost;
 		int nCent = 0;
 		int nEdge = 0;
 		try {
@@ -116,7 +129,10 @@ public class PIV
 					// position in oocyte
 					dist = Math.sqrt( Math.pow(x-center[0],2) + Math.pow(y-center[1],2) );
 					cost = ( (x-center[0])*vx + (y-center[1])*vy )/(dist*norm);
-			
+                                        meanVx += vx;
+                                        meanVy += vy;
+                                        sumNorm += norm;
+                                        
 					if ( !Double.isNaN(cost) )
 					{	
 					// close to center, 1/2 of radius
@@ -125,6 +141,8 @@ public class PIV
 						normCent += norm;
 						angCent += Math.abs(cost);
 						nCent ++;
+                                                meanVxCent += vx;
+                                                meanVyCent += vy;
 					}
 					// close to edge
 					if ( dist >= (radius * 0.75) )
@@ -132,6 +150,8 @@ public class PIV
 						normEdge += norm;
 						angEdge += Math.abs( cost );
 						nEdge ++;
+                                                meanVxEdge += vx;
+                                                meanVyEdge += vy;
 					}
 					}
 				}
@@ -166,5 +186,19 @@ public class PIV
 		val[3] = normEdge/nEdge; // mean amplitude close to the edge
 		val[4] = angCent/nCent; // tangentiel close to center ?
 		val[5] = angEdge/nEdge; // tangentiel close to edge ?
+                // mean angle from sum of displacements
+                double alpha = Math.atan2(meanVy, meanVx) * 180/Math.PI;
+                double dirStrength = Math.sqrt(meanVy*meanVy+meanVx*meanVx) / sumNorm;
+                val[6] = alpha;
+                val[7] = dirStrength;
+                double alphaCent = Math.atan2(meanVyCent, meanVxCent) * 180/Math.PI;
+                double dirStrengthCent = Math.sqrt(meanVyCent*meanVyCent+meanVxCent*meanVxCent) / normCent;
+                val[8] = alphaCent;
+                val[10] = dirStrengthCent;
+                double alphaEdge = Math.atan2(meanVyEdge, meanVxEdge) * 180/Math.PI;
+                double dirStrengthEdge = Math.sqrt(meanVyEdge*meanVyEdge+meanVxEdge*meanVxEdge) / normEdge;
+                val[9] = alphaEdge;
+                val[11] = dirStrengthEdge;
+                
 	}
 }
