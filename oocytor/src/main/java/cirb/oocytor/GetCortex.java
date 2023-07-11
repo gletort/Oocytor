@@ -185,7 +185,7 @@ public class GetCortex implements PlugIn
 	}
 
 	/** \brief Convert floatPolygons to Rois, set image/position/name */
-	public Roi[] createRois(FloatPolygon[] fp)
+	public Roi[] createRois(FloatPolygon[] fp, int[] zpos)
 	{
 		rm.reset();
 		IJ.run(imp, "Select None", "");
@@ -198,8 +198,8 @@ public class GetCortex implements PlugIn
 			Roi contour = new PolygonRoi(xpts, ypts, Roi.POLYGON);
 			imp.setSlice((j+1));
 			contour.setImage(imp);
-			contour.setPosition((j+1));
-			contour.setName("cortex_"+(j+1));
+			contour.setPosition(zpos[j]);
+			contour.setName("cortex_"+zpos[j]);
 			rm.addRoi(contour);
 			rcortex[j] = contour;
 		}
@@ -297,17 +297,19 @@ public class GetCortex implements PlugIn
 
 		IJ.showStatus("Refining Rois...");
 		// Get cortex contours
-		FloatPolygon[] smoothcortex = new FloatPolygon[imp.getNSlices()];
+		FloatPolygon[] smoothcortex = new FloatPolygon[rm.getCount()];
+                int[] zpos = new int[rm.getCount()];
 		for ( int i = 0; i < rm.getCount(); i++ )
 		{
 			IJ.showStatus("Refining Rois... "+i+"/"+rm.getCount());
 			Roi cur = rm.getRoi(i);
 			imp.setSlice( cur.getPosition() );
+                        zpos[i] = cur.getPosition();
 			imp.setRoi(cur);
 			cur = imp.getRoi();
 
 			// find contour+local maxima position at each angle
-			int nang = 300; //200	
+			int nang = 360; //200	
 			double ang = 0;
 			double dang = 2*Math.PI/nang;
 			float[] xpts = new float[nang];
@@ -335,8 +337,9 @@ public class GetCortex implements PlugIn
 			}
 
 			smoothcortex[i] = new FloatPolygon(xpts, ypts);
+                        
 		}
-		createRois(smoothcortex);
+		createRois(smoothcortex, zpos);
 	}
 
 
