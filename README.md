@@ -30,8 +30,10 @@ To use it, the plugin ask for 3 parameters:
 * `smooth contour`: possibility to smooth the final ROI contour, to avoid too wavy contours. The value of the parameter is the number of neighboring points that are taken into account to smooth. Default parameter (5) is low so as not to smooth too much. 
 * `reach proportion`: to build the contour, the binary image calculated from the output of the neural networks is analysed to find the limit between the segmented part (white) and the outside (black). The result can be refined by looking at the local intensity changes in the initial image and the limit will be updated to the highest point of intensity change in the neighborhood of the found limit. This parameter control the extend of this neighborhood. Low value means to stick to the pure network output while higher value implies sensitivity to the local intensity changes.
 * `nb networks`: to increase the robutness of the results, it is possible to combine the outputs of several neural networks trained on this segmentation task and to take the common output. In the default version, we use 2 networks, but users can add their own networks or remove one.
+* `locate`: option from version 0.5 of Oocytor, to locate the oocyte in the image (should contain only one) and zoom around it for better segmentation.
 
 ![gui cortex](./imgs/interfaceCortex.png?raw=true "Cortex option interface")
+
 
 ##### Models proposed
 We tested different networks trained on either mouse and human data, or on mouse, human and sea urchin data (see our publication for more details).
