@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>cirb</groupId>
     <artifactId>oocytor_</artifactId>
-    <version>0.4</version>
+    <version>0.5</version>
     <packaging>jar</packaging>
    
    <name>Oocytor</name>
@@ -12,7 +12,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <imagej.app.directory>/home/gaelle/Logiciel/Fiji.app/</imagej.app.directory>
+        <imagej.app.directory>/home/gaelle/Logiciel/Fiji/Fiji.app/</imagej.app.directory>
         <main-class>cirb.oocytor.GetCortex</main-class>	        
 	<package-name>cirb.oocytor</package-name>
 	<license.licenseName>bsd_3</license.licenseName>
