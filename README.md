@@ -47,6 +47,11 @@ If Oocytor segmentation fails on your data, it's likely that the imaging conditi
 The plugin option `Get ZP` detects the zona pellucida outside and inside contours of all images/stacks in a chosen folder and returns the contours as ROIs which are saved in a folder named `contours` automatically created in the given folder.
 ![image zp segmentation](./imgs/zpseg.png?raw=true "Example of zp segmentation")
 
+From Oocytor version 0.6, additional options are available:
+
+* `locate`: first estimate where is the oocyte in the image (there should be only one oocyte) and crop around it before to run the neural networks. This allows for a better detection for large images where the oocyte is only a small part of the full image. The results will be put back to the original image.
+* `zp boundary`: by default, this option is set to `Both` to save both ZP inner and outer boundaries in the segmentation. To measure the features with Oocytor afterwards, both segmentations are needed. However if you only need to segment one boundary and do not use the feature measurement, you can choose to save only one of the two contour with this parameter.
+
 #### Neural networks used for segmentation
 To perform the segmentation, we used neural networks trained on thausend images of mouse and human oocytes acquired in transmitted light. However it might be necessary to retrain it to adapt it to oocyte images, particularly if they are quite different from the one used for the training. 
 Our trained neural networks are available in this github in the models folder. They should be placed in a `models` folder in the Fiji directory (see [Installation](#installation)). They can be used as pre-trained networks to retrain it with only a few new images. New networks (retrain or new architecture network) can be used by oocytor plugin by replacing the `oocyte*.zip` folders by your own networks in the corresponding folders (`models/cortex` or `models/zp`). The names has to be kept the same.
