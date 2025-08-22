@@ -3,7 +3,7 @@
 
 drawCortex = 1; // put to 0 not to draw it
 drawZP = 0;     // put to 0 not to draw it
-slice = 1;     // slice on which to draw. Put -1 to draw on all slices
+slice = -1;     // slice on which to draw. Put -1 to draw on all slices
 saveImg = 1;    // save the resulting image or stack in a new folder
 
 doFolder = 1;  // put to 0 to do only one file, 1 to process a whole folder
