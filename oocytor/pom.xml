@@ -2,32 +2,30 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>44.0.0</version>
+		<relativePath />
+	</parent>
+
     <groupId>cirb</groupId>
     <artifactId>oocytor_</artifactId>
-    <version>0.5</version>
+    <version>0.6-SNAPSHOT</version>
     <packaging>jar</packaging>
    
    <name>Oocytor</name>
     <description> Plugins to segment different oocytes structures, and to extract numerous features to describe them </description>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <imagej.app.directory>/home/gaelle/Logiciel/Fiji/Fiji.app/</imagej.app.directory>
-        <main-class>cirb.oocytor.GetCortex</main-class>	        
-	<package-name>cirb.oocytor</package-name>
-	<license.licenseName>bsd_3</license.licenseName>
-	<license.copyrightOwners>Gaelle Letort</license.copyrightOwners>
-	</properties>
-	
      
-    	<url>github</url>
+    <url>https://github.com/gletort/Oocytor</url>
 	<inceptionYear>2021</inceptionYear>
 	<organization>
 	<name>CIRB</name>
 	</organization>
 	<licenses>
 		<license>
-			<name>Todo License</name>
+			<name>BSD 3-Clause License</name>
+			<url>https://opensource.org/license/bsd-3-clause</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
@@ -36,98 +34,112 @@
              <developer>
 		  <id>gaelle</id>
                 <name>Gaelle Letort</name>
-                <email>gaelle.letort@college-de-france.fr</email>
-                <url></url>
-                <organization>CIRB, Collège de France</organization>
+                <email>gaelle.letort@cnrs.fr</email>
+			<url>https://github.com/gletort</url>
+                <organization>CNRS</organization>
                 <roles>
-                        <role>developer</role>
+				<role>founder</role>
+				<role>lead</role>
+				<role>developer</role>
+				<role>debugger</role>
+				<role>reviewer</role>
+				<role>support</role>
+				<role>maintainer</role>
                 </roles>
              </developer>
 	</developers>
+
+	<contributors>
+		<contributor>
+			<name>Someone Who Contributed</name>
+			<url>http://imagej.net/User:TheirWikiUsername</url>
+			<properties>
+				<id>their-id</id>
+			</properties>
+		</contributor>
+	</contributors>
+	
+	<mailingLists>
+		<mailingList>
+			<name>ImageJ Forum</name>
+			<archive>https://forum.image.sc/</archive>
+		</mailingList>
+	</mailingLists>
+	
+	<scm>
+		<connection>scm:git:git://github.com/gletort/Oocytor</connection>
+		<developerConnection>
+				scm:git:git@github.com:gletort/Oocytor</developerConnection>
+		<url>https://github.com/gletort/Oocytor</url>
+	  <tag>HEAD</tag>
+  </scm>
+  
+  <issueManagement>
+		<system>GitHub Issues</system>
+		<url>https://github.com/gletort/Oocytor/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>None</system>
+	</ciManagement>
+
+  
+  <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <main-class>cirb.oocytor.GetCortex</main-class>	        
+	<package-name>cirb.oocytor</package-name>
+	<license.licenseName>bsd_3</license.licenseName>
+	<license.copyrightOwners>Gaelle Letort</license.copyrightOwners>
+	
+	<!-- Use Java 21. -->
+		<scijava.jvm.version>21</scijava.jvm.version>
+		<scijava.jvm.build.version>[21,)</scijava.jvm.build.version>
+
+		<appose.version>0.11.0</appose.version>
+		<imglib2-appose.version>0.9.0</imglib2-appose.version>
+	</properties>
+
         
  <repositories>   
  <repository>
     <id>scijava.public</id>
     <url>https://maven.scijava.org/content/groups/public</url>
   </repository>
- 
 </repositories>
+
 <dependencies>
        <dependency>
         <groupId>net.imagej</groupId>
         <artifactId>ij</artifactId>
-         <version>1.53c</version>
-          <type>jar</type>
         </dependency>
     <dependency>
         <groupId>org.scijava</groupId>
         <artifactId>scijava-common</artifactId>
-      <version>2.83.3</version>
-         <type>jar</type>
     </dependency>
     <dependency>
        <groupId>de.csbdresden</groupId>
 	<artifactId>csbdeep</artifactId>
 	<version>0.3.5-SNAPSHOT</version>
 	</dependency>
-    <dependency>
-        <groupId>net.imglib2</groupId>
-        <artifactId>imglib2-ij</artifactId>
-      <version>2.0.0-beta1</version>
-      <type>jar</type>
-    </dependency>
-     <dependency>
-	  <groupId>net.imglib2</groupId>
-	  <artifactId>imglib2</artifactId>
-	  <version>5.10.0</version>
-	  <type>jar</type>
-	 </dependency>
+	
+	<!-- ImgLib2 dependencies -->
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-appose</artifactId>
+			<version>${imglib2-appose.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-ij</artifactId>
+		</dependency>
+
     <dependency>
         <groupId>net.imagej</groupId>
         <artifactId>imagej-common</artifactId>
-      <version>0.34.0</version>
-      <type>jar</type>
     </dependency>
     <dependency>
         <groupId>sc.fiji</groupId>
         <artifactId>fiji-lib</artifactId>
-      <version>2.1.3-SNAPSHOT</version>
-      <type>jar</type>
     </dependency>
 </dependencies>
 
-<build>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>2.3.2</version>
-                    <configuration>
-                        <showDeprecation>true</showDeprecation>
-                        <source>1.7</source>
-                        <target>1.7</target>
-                    </configuration>
-		</plugin>
-	
-    <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-antrun-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>copytoplugins</id>
-                            <phase>install</phase>
-                            <goals>
-                                <goal>run</goal>
-                            </goals>
-                            <configuration>
-                                <tasks>
-                                    <copy todir="${imagej.app.directory}/plugins/CIRB/" file="target/${project.build.finalName}.jar"/>
-                                </tasks>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-               
-            </plugins>
-	</build>
 </project>
