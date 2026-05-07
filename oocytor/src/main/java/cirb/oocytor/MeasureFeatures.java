@@ -401,7 +401,7 @@ public class MeasureFeatures implements PlugIn
 		// open, reset
 		String imgname = dir+inname;
 		imp = IJ.openVirtual(imgname);
-                purname = inname.substring(0, inname.lastIndexOf('.'));
+        purname = inname.substring(0, inname.lastIndexOf('.'));
 		//imp = IJ.getImage();
 		util.initCalibration(imp);
 		rm.runCommand(imp,"Deselect");
