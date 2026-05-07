@@ -33,6 +33,7 @@ import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.PointRoi;
 import ij.measure.Calibration;
+import ij.measure.ResultsTable;
 import ij.plugin.PlugIn;
 import ij.plugin.frame.RoiManager;
 import ij.process.ImageProcessor;
@@ -61,6 +62,9 @@ public class GetNucleus implements PlugIn
 	private boolean ask_directory = false; // work on current image or on a directory
 	private boolean visible = true;
 	private boolean debug = false; // more messages to help debugging
+	private boolean save_position = false; // save positions in a csv file
+	
+	private String purname = ""; // name of the current image without extension
 	
 	/** \brief Dialog window 
 	  @return true if no pb, false else
@@ -74,7 +78,14 @@ public class GetNucleus implements PlugIn
 		gd.addNumericField( "Oocyte_diameter_pixels", diameter );
 		gd.addNumericField( "confidence_threshold :", confidence_threshold );
 		gd.addCheckbox( "Only one nucleus", one_by_slice );
-		//gd.addCheckbox("visible_mode", visible);
+		if ( ask_directory )
+		{
+			save_position = true;
+			visible = false;
+		}
+		//gd.addCheckbox( "Save positions in csv", save_position);
+		
+		gd.addCheckbox("visible_mode", visible);
         		
 		gd.setBackground(new Color(100,140,170));
 		gd.setInsets​(-100, 240, 0);
@@ -93,10 +104,12 @@ public class GetNucleus implements PlugIn
 		gd.showDialog();
 		if (gd.wasCanceled()) return false;
 
-		//visible = gd.getNextBoolean();
 		diameter = (double) gd.getNextNumber();
         confidence_threshold = (double) gd.getNextNumber();
         one_by_slice = gd.getNextBoolean();
+        visible = gd.getNextBoolean();
+		
+        //save_position = gd.getNextBoolean();
 		model_file = gd.getNextString();
         if ( ask_directory )
         	dir = gd.getNextString();	
@@ -237,7 +250,6 @@ public class GetNucleus implements PlugIn
 				{
 					IJ.showProgress( (int)e.current, (int)e.maximum );
 				}
-
 			} );
 		    		    
 		    task.start();
@@ -248,7 +260,7 @@ public class GetNucleus implements PlugIn
 				throw new RuntimeException( "Python script failed with error: " + task.error );
 			
 			Map<String, Object> map_detections = (Map<String, Object>) task.outputs.get( "detections" );
-			readDetections( map_detections, true );
+			readDetections( map_detections, !save_position );
 			
 			nnservice.close();
 		}
@@ -263,6 +275,12 @@ public class GetNucleus implements PlugIn
 	{
 		try 
 		{
+			ResultsTable myrt = null;
+			if ( save_position )
+			{
+				myrt = new ResultsTable();
+                myrt.setPrecision​(2);
+			}
 			// If need to rescale the positions (image was resized)
 			double factor = reference_diameter/diameter;
     		factor = ( Math.abs( 1 - factor ) > 0.3 ) ? factor: 1;
@@ -283,13 +301,28 @@ public class GetNucleus implements PlugIn
         		proi.setPosition( 1, 1, roi_frame );
         		if ( add_to_manager )
         			rm.addRoi( proi ); // Add to RoiManager
-        		
-        	}		
+        		if (save_position )
+        		{
+        			myrt.incrementCounter();
+        			myrt.addValue("Frame",roi_frame );
+        			myrt.addValue("X", cx);
+        			myrt.addValue("Y", cy);
+        			myrt.addValue("Name", roi_name);
+        		}
+    		
+        	}
+        	if (save_position )
+    		{
+        		if ( center.size()>0 )
+        			myrt.addResults();
+    			myrt.save( dir+"contours"+File.separator+purname+"_nucleusPosition.csv");
+           }
 		}catch (Exception e) 
 		{
 			System.err.println("Error creating ROI: " + e.getMessage());
 			e.printStackTrace();
 		}
+		
 	}
 
 	
@@ -402,6 +435,7 @@ private void hideProgress()
 				if ( fily.isFile() )
 				{
 					String inname = fily.getName();
+					purname = inname.substring(0, inname.lastIndexOf('.'));
 					int j = inname.lastIndexOf('.');
 					if (j > 0)
 					{

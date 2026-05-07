@@ -62,7 +62,7 @@ for ind, cimg in enumerate( img ):
     yolores = get_sliced_prediction( cimg, model, slice_height=window_size, slice_width=window_size, overlap_height_ratio=overlap_ratio, overlap_width_ratio=overlap_ratio )
     if yolores is not None:
         if keep_best:
-            indbest = 0
+            indbest = -1
             best_score = 0
         for iroi, roi in enumerate(yolores.object_prediction_list):
             score = roi.score.value
@@ -81,7 +81,7 @@ for ind, cimg in enumerate( img ):
                 #results["size"].append( mean_size )
                 results["slice"].append( ind )
                 results["confidence"].append( roi.score.value )
-        if keep_best:
+        if keep_best and indbest >= 0:
             roi = yolores.object_prediction_list[indbest]
             bbox = np.int32( roi.bbox.box )
             mean_size = ((bbox[2]+1-bbox[0]) + (bbox[3]+1-bbox[1])) / 2
