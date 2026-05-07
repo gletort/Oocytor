@@ -35,6 +35,7 @@ import ij.gui.PointRoi;
 import ij.measure.Calibration;
 import ij.plugin.PlugIn;
 import ij.plugin.frame.RoiManager;
+import ij.process.ImageProcessor;
 import net.imagej.ImgPlus;
 import net.imglib2.appose.NDArrays;
 import net.imglib2.img.ImagePlusAdapter;
@@ -53,6 +54,8 @@ public class GetNucleus implements PlugIn
 	private ImagePlus imp;
 	private Calibration cal;
 	private Utils util;
+	private double reference_diameter = 700; // average diameter of training images, reference size
+	private double diameter = 700; // average oocyte diameter, to resize images if necessary
 	private double confidence_threshold = 0.2;
 	private boolean one_by_slice = true; // only one detection by slice/frame
 	private boolean ask_directory = false; // work on current image or on a directory
@@ -68,6 +71,7 @@ public class GetNucleus implements PlugIn
 		Font boldy = new Font("SansSerif", Font.CENTER_BASELINE, 15);
 		gd.setFont(boldy);
 		//gd.addMessage("----------------------------------------------------------------------------------------------- ");
+		gd.addNumericField( "Oocyte_diameter_pixels", diameter );
 		gd.addNumericField( "confidence_threshold :", confidence_threshold );
 		gd.addCheckbox( "Only one nucleus", one_by_slice );
 		//gd.addCheckbox("visible_mode", visible);
@@ -90,6 +94,7 @@ public class GetNucleus implements PlugIn
 		if (gd.wasCanceled()) return false;
 
 		//visible = gd.getNextBoolean();
+		diameter = (double) gd.getNextNumber();
         confidence_threshold = (double) gd.getNextNumber();
         one_by_slice = gd.getNextBoolean();
 		model_file = gd.getNextString();
@@ -141,12 +146,32 @@ public class GetNucleus implements PlugIn
 		process();	
 	}
 
+	/** Resize imp if necessary */
+	public ImagePlus resizeImage()
+	{
+		double factor = reference_diameter/diameter;
+		if ( Math.abs( 1 - factor ) > 0.3 )
+		{
+			int newWidth  = (int) ( imp.getWidth()  * factor );
+	        int newHeight = (int) ( imp.getHeight() * factor );
+
+	        ImageProcessor ip = imp.getProcessor().duplicate();
+	        ip.setInterpolationMethod( ImageProcessor.BILINEAR );
+	        ImageProcessor resizedIp = ip.resize(newWidth, newHeight, true);
+
+	        ImagePlus resized = new ImagePlus("Resized-"+imp.getTitle(), resizedIp);
+	        return resized;
+		}
+		return imp;
+	}
+	
 	/**
 	 * Prepare the python environment and initialize nnInteractive to the active image
 	 */
 	public < T extends RealType< T > & NativeType< T > > void process()
 	{
-		final ImgPlus< T > img = ImagePlusAdapter.wrapImgPlus( imp );
+		ImagePlus resized = resizeImage();
+		final ImgPlus< T > img = ImagePlusAdapter.wrapImgPlus( resized);
 		final String script = getScript( this.getClass().getResource("nucleus_detector.py" ) );
 		
 		final Map< String, Object > inputs = new HashMap<>();
@@ -238,12 +263,18 @@ public class GetNucleus implements PlugIn
 	{
 		try 
 		{
+			// If need to rescale the positions (image was resized)
+			double factor = reference_diameter/diameter;
+    		factor = ( Math.abs( 1 - factor ) > 0.3 ) ? factor: 1;
+    		
         	List<Integer> zpos = (List<Integer>) map_detections.get( "slice" );
         	List<List<Integer>> center = (List<List<Integer>>) map_detections.get( "center" );
-        	
+	
         	for ( int i=0; i<center.size(); i++ )
         	{
-        		PointRoi proi = new PointRoi( center.get(i).get(0), center.get(i).get(1) );
+        		int cx = (int) ( center.get(i).get(0) / factor );
+        		int cy = (int) ( center.get(i).get(1) / factor );
+        		PointRoi proi = new PointRoi( cx, cy );
         		proi.setSize( 4 );
         		String roi_name = (String) "nucleus_"+i;
         		proi.setName( ""+roi_name );
