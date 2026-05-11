@@ -126,6 +126,7 @@ public class GetCortex implements PlugIn
         locate = gd.getNextBoolean();
                 
          model_name = gd.getNextChoice();
+         custom_dir = gd.getNextString();
          //modeldir = gd.getNextString();
          if ( ask_directory )
         	 dir = gd.getNextString();	
@@ -377,7 +378,7 @@ public class GetCortex implements PlugIn
             // Segment the cropped images
             ImagePlus impcrop = new ImagePlus("cropped", cropstack);               
             //ImagePlus unet = net.runUnet(impcrop, dir+inname, nnet, modeldir, 800, visible);
-            RunUNet runet = new RunUNet( "cortex_detector" );
+            RunUNet runet = new RunUNet( "cortex_detector.py" );
             ImagePlus unet = runet.runUnet( impcrop, model_path, 8, visible, debug );
             if ( visible ) unet.show();
                 
@@ -628,7 +629,7 @@ public class GetCortex implements PlugIn
                 }
                 else 
                 {
-                    RunUNet runet = new RunUNet("cortex_detector");
+                    RunUNet runet = new RunUNet("cortex_detector.py");
                 	ImagePlus unet = runet.runUnet( imp, model_path, 8, visible, debug );
                     if ( visible ) unet.show();
                     // extract contours from the binary image

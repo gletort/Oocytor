@@ -43,7 +43,7 @@ public class RunUNet
 	public < T extends RealType< T > & NativeType< T > > ImagePlus process( ImagePlus resized, String model_path, int nfeat, boolean debug )
 	{
 		
-		final ImgPlus< T > img = ImagePlusAdapter.wrapImgPlus( resized);
+		final ImgPlus< T > img = ImagePlusAdapter.wrapImgPlus( resized );
 		final String script = Utils.getScript( this.getClass().getResource( script_name ) );
 		
 		final Map< String, Object > inputs = new HashMap<>();
