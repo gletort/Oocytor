@@ -1040,7 +1040,7 @@ public class Utils
 		// Download and install if necessary the model
 		//System.out.println(model_path);
 		//String aspath = model_path.replace("_", "/");
-		String model_url = "https://github.com/gletort/Oocytor/raw/refs/heads/getnuclei/models/"+model_path+".zip";
+		String model_url = "https://github.com/gletort/Oocytor/raw/refs/heads/main/models/"+model_path+".zip";
 		String rootdir = "";
 		if ( model_path.contains("/") )
 		{
