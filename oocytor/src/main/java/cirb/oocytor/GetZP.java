@@ -56,6 +56,7 @@ public class GetZP implements PlugIn
 	int threshold = 100;      // threshold to locate oocyte
 	String contours = "Both"; // "Both", "Outer only", "Inner only"
 	private String[] models = {"zp/mouse", "zp/human"};
+	private int nfeatures = 16; // nb features of the input model
 	private boolean ask_directory = false; // working on opened image or on a directory
 	private boolean debug = false; // add debug prints
 	private boolean save_rois = true; // save rois to zip file
@@ -402,7 +403,7 @@ public class GetZP implements PlugIn
         // Segment the cropped images
         ImagePlus impcrop = new ImagePlus("cropped", cropstack);               
         RunUNet runet = new RunUNet( "cortex_detector.py" );
-        ImagePlus unet = runet.runUnet( impcrop, model_path, 24, visible, debug );
+        ImagePlus unet = runet.runUnet( impcrop, model_path, nfeatures, visible, debug );
        
         if ( visible ) unet.show();
                 
@@ -463,7 +464,7 @@ public class GetZP implements PlugIn
 	public void getZP(String inname) 
 	{
 		IJ.log("Doing " + dir + inname);
-		IJ.run("Close All", "");
+		if (ask_directory) IJ.run("Close All", "");
 		rm.reset();
 
 		String imgname = dir + inname;
@@ -480,7 +481,7 @@ public class GetZP implements PlugIn
 		{
 			// run neural network for segmentation
 			RunUNet runet = new RunUNet( "cortex_detector.py" );
-		    unet = runet.runUnet( imp, model_path, 24, visible, debug );
+		    unet = runet.runUnet( imp, model_path, nfeatures, visible, debug );
 		}
 		// extract contours from the binary image, smooth a little
 		IJ.showStatus("Refine ZP Rois...");
@@ -565,6 +566,8 @@ public class GetZP implements PlugIn
 		{
 			IJ.error( "Problem to download/find local model." );
 		}
+		if ( model_name.equals("zp/human") )
+			nfeatures = 24;
 	}
   
 

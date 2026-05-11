@@ -5,6 +5,7 @@ import fiji.util.gui.GenericDialogPlus;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.WindowManager;
 import ij.measure.Calibration;
 import ij.plugin.PlugIn;
 import ij.plugin.frame.RoiManager;
@@ -35,23 +36,32 @@ import javax.swing.ImageIcon;
  */
 public class FindNEBD implements PlugIn
 {
-        ImagePlus imp;
+    private ImagePlus imp;
 	Calibration cal;
 	RoiManager rm;
 	String dir = "";
 	String modeldir = "";
 	Utils util;
-        int nnet = 2;
-        Network net;
-        final ImageIcon icon = new ImageIcon(this.getClass().getResource("/oo_logo.png"));
-        boolean twins = false;
-        
+	final ImageIcon icon = new ImageIcon(this.getClass().getResource("/oo_logo.png"));
+    boolean twins = false;
+    private String[] models = {"nebd/mouse"};
+	//private int nfeatures = 16; // nb features of the input model
+	private boolean ask_directory = false; // working on opened image or on a directory
+	private boolean debug = false; // add debug prints
+	private String model_name = "";
+	private String model_path = "";
+	private boolean visible = true;
+   
         
         /** \brief Dialog window 
         @return true if no pb, false else
          */
 	public boolean getParameters()
 	{
+		if ( ask_directory )
+		{
+			visible = false;
+		}
             GenericDialogPlus gd = new GenericDialogPlus("Find NEBD - Options", IJ.getInstance() );
             Font boldy = new Font("SansSerif", Font.CENTER_BASELINE, 15);
             gd.setFont(boldy);
@@ -60,28 +70,60 @@ public class FindNEBD implements PlugIn
             ImagePlus iconimg = new ImagePlus();
             iconimg.setImage(icon.getImage());
             gd.addImage(iconimg);
-            gd.addNumericField("nb_networks :", nnet);
-		
-            gd.addDirectoryField("model_path:", modeldir);
-            gd.addDirectoryField("images_directory:", dir);
+            
+            gd.addChoice( "Choose model:", models, models[0] );
+			//gd.addDirectoryField("model_path:", modeldir);
+	      if ( !ask_directory )
+	      {
+	           gd.addMessage( "Processing opened image. Close it if you wish to choose a directory instead" );
+	           if ( dir == null )
+	        	   gd.addDirectoryField("main_directory:", dir);
+	           //gd.addCheckbox( "save_rois", save_rois );
+	       }
+	       else
+	       {
+	           gd.addDirectoryField("images_directory:", dir);
+	       }
 
             gd.showDialog();
             if (gd.wasCanceled()) return false;
             
-            nnet = (int) gd.getNextNumber();	
-	    modeldir = gd.getNextString();
-            dir = gd.getNextString();	
+            model_name = gd.getNextChoice();
+            //modeldir = gd.getNextString();
+            if ( ask_directory )
+           	 dir = gd.getNextString();	
+            else
+            {
+           	 if ( dir == null )
+           		 dir = gd.getNextString();	
+           	 //save_rois = gd.getNextBoolean();
+            }
             return true;
         }
+	
+	/** Get the path to the model local download or path */
+	public void getModelPath()
+	{
+		// from name to path
+		//model_path = model_name.replace("_", "/");
+		model_path = util.getModelDir( model_name );
+		if ( model_path == null )
+		{
+			IJ.error( "Problem to download/find local model." );
+		}
+	}
         
         /** Initialisation of an image */
 	public void openResetImage(String imgname)
 	{
+		if ( ask_directory )
+		{
 		String ext = imgname.substring(imgname.lastIndexOf('.'));
 		if ( ext.equals(".tif") )
 			imp = IJ.openVirtual(imgname);
 		else
 			imp = IJ.openImage(imgname);
+		}
 		//imp = IJ.getImage();
 		cal = util.initCalibration(imp);
 		imp.show();
@@ -156,12 +198,12 @@ public class FindNEBD implements PlugIn
         public int lookForNEBD(String inname )
         {
             IJ.log("Doing "+dir+inname);
-            IJ.run("Close All", "");
-	    rm.reset();
+            if (ask_directory) IJ.run("Close All", "");
+            rm.reset();
 
             String imgname = dir+inname;
-	    openResetImage(imgname);
-	    util.reOrder(imp);
+            openResetImage(imgname);
+            util.reOrder(imp);
          
             if (imp.getNSlices() == 1)
             {
@@ -173,9 +215,11 @@ public class FindNEBD implements PlugIn
             }
             
             // run neural network for segmentation
-            //Network net = new Network();
-	    ImagePlus unet = net.runUnet(imp, dir+inname, nnet, modeldir, 250, true);
-		
+            //ImagePlus unet = net.runUnet(imp, dir+inname, nnet, modeldir, 250, true);
+            RunUNet runet = new RunUNet( "nebd_detector.py" );
+            ImagePlus unet = runet.runUnet( imp, model_path, 32, visible, debug );
+           
+            
             // extract contours from the binary image, smooth a little
             IJ.showStatus("Find NEBD time...");
             int nebd = getNEBDFromUnet(unet);
@@ -188,67 +232,83 @@ public class FindNEBD implements PlugIn
         }
         
         public void run(String arg)
-	{
-             modeldir = IJ.getDirectory("imagej")+File.separator+"models"+File.separator+arg+File.separator;
-            // get parameters, initialize
+        {
+        	imp = WindowManager.getCurrentImage();  
+    		if ( imp == null )
+    		{
+    			ask_directory = true;
+    		}
+    		else
+    		{
+    			ask_directory = false;
+    			dir = IJ.getDirectory( "image" );
+    			//System.out.println( "Image located in "+dir );
+    		}
+    		
             if (!getParameters()) return;
-		IJ.run("Close All");
-		rm = RoiManager.getInstance();
-		if ( rm == null )
-			rm = new RoiManager();
-		rm.reset();
-		util = new Utils();
 		
-                if (! dir.endsWith(File.separator))
-                {
+            if ( ask_directory) IJ.run("Close All");
+            
+            rm = RoiManager.getInstance();
+            if ( rm == null )
+            	rm = new RoiManager();
+            rm.reset();
+            util = new Utils();
+		
+            // Get/download if necessary the model
+            getModelPath();
+            
+            // Prepare the result folder
+              if (! dir.endsWith(File.separator))
+               {
                     dir = dir + File.separator;
-                }
-                if (! modeldir.endsWith(File.separator))
-                {
-                    modeldir = modeldir + File.separator;
-                }
-                net = new Network();
-                net.init();
-                
-                
-                // Performs on all images in chosen directory
-		File thedir = new File(dir); 
-		File[] fileList = thedir.listFiles(); 
-		File directory = new File(dir+"/contours");
-		if (! directory.exists())
-			directory.mkdir();
-                
-            String results = "FileName , NEBDSlice\n";
-            for (File fily : fileList) 
-            {
-                if ( fily.isFile() )
-                {
-                    String inname = fily.getName();
-                    int j = inname.lastIndexOf('.');
-                    if (j > 0)
-                    {
-                        String extension = inname.substring(j);
-                        if ( extension.equals(".tif") | extension.equals(".TIF") | extension.equals(".png") | extension.equals(".jpg") | extension.equals(".JPG") )
-                        {
-                            int nebd = lookForNEBD( inname );
-                            results += inname+" , "+nebd+"\n";
-                        }
-                        
-                    }
-                }
-            }
-         net.end();
-         net = null;
-         System.gc(); // garbage collector   
-         try 
-         {
-             PrintWriter writer = new PrintWriter(new File(dir+"/nebd_times.csv"));
-             writer.write(results);
-             writer.close();
-             IJ.showStatus("Done");
-         } 
-         catch (Exception e) { IJ.error(e.getMessage()); }
+              }
+              File directory = new File(dir+"/contours");
+        	if (! directory.exists())
+        		directory.mkdir();
+               
 
+        	if ( ask_directory )
+        	{
+                // Performs on all images in chosen directory
+        		File thedir = new File(dir); 
+        		File[] fileList = thedir.listFiles(); 
+		     
+        		String results = "FileName , NEBDSlice\n";
+        		for (File fily : fileList) 
+        		{
+        			if ( fily.isFile() )
+        			{
+        				String inname = fily.getName();
+        				int j = inname.lastIndexOf('.');
+        				if (j > 0)
+        				{
+        					String extension = inname.substring(j);
+        					if ( extension.equals(".tif") | extension.equals(".TIF") | extension.equals(".png") | extension.equals(".jpg") | extension.equals(".JPG") )
+        					{
+        						int nebd = lookForNEBD( inname );
+        						results += inname+" , "+nebd+"\n";
+        					}
+                    	}
+        			}
+        		}
+        		
+        		System.gc(); // garbage collector   
+        		try 
+        		{
+        			PrintWriter writer = new PrintWriter(new File(dir+"/nebd_times.csv"));
+        			writer.write(results);
+        			writer.close();
+        			IJ.showStatus("Done");
+        		} 
+        		catch (Exception e) { IJ.error(e.getMessage()); }
+        	}
+        	else
+        	{
+        		String inname = imp.getTitle();
+            	int nebd = lookForNEBD( inname );
+            	IJ.log( "Filename: "+inname+" NEBD time: "+nebd );
+        	}
     }
 
     
