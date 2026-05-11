@@ -1,18 +1,87 @@
-
 [workspace]
-authors = ["Gaelle Letort"]
-channels = ["pytorch", "nvidia", "conda-forge"]
 name = "oocytor-env"
-platforms = ["linux-64"]
-version = "0.0.1"
-
-[tasks]
+version = "0.0.0"
+description = "Modules with tensorflow and yolo to run trained U-Net in Oocytor"
+authors = ["Gaelle Letort"]
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "osx-64", "linux-64", "win-64"]
 
 [dependencies]
-python = "3.10.*"
-appose = ">=0.10.1,<0.12"
+python = "==3.10"
+numpy = "<2"
+pip = "*"
 
 [pypi-dependencies]
 sahi = "*"
 ultralytics = "*"
 scikit-image = "*"
+stardist = "*"
+epyseg = "*"
+tifffile = "<= 2024.12.12"
+appose = ">=0.10.1, <=0.12"
+scipy = "*"
+#appose = { git = "https://github.com/apposed/appose-python.git", rev = "0dfc8bd3922b406a985c8ab75559dd6f9663c87e" }
+
+[target.osx-64.dependencies]
+python = "==3.10"
+
+[target.osx-arm64.dependencies]
+python = "==3.10"
+
+# PyPI deps common per-OS:
+[target.win-64.pypi-dependencies]
+tensorflow = "==2.10.1"
+
+[target.linux-64.pypi-dependencies]
+tensorflow = "==2.10.1"
+
+[target.osx-64.pypi-dependencies]
+tensorflow = "*"                 # latest CPU TF for Intel mac
+
+[target.osx-arm64.pypi-dependencies]
+tensorflow-macos = ">=2.13,<=2.15"
+tensorflow-metal = ">=0.7,<=1.1"
+
+# ---------------- Macos no metal - ONLY APPLE SILICON ----------------
+[feature.nometal]
+channels = ["conda-forge"]
+
+[feature.nometal.target.osx-arm64.pypi-dependencies]
+tensorflow = "*"
+
+# ---------------- CUDA feature (Windows/Linux only) ----------------
+[feature.cuda]
+channels = ["nvidia", "conda-forge"]   # optional; inherits from workspace
+
+[feature.cuda.target.win-64.dependencies]
+cudatoolkit = "11.2.*"
+cudnn       = "8.1.*"
+
+[feature.cuda.target.linux-64.dependencies]
+cudatoolkit = "11.2.*"
+cudnn       = "8.1.*"
+
+# Activation only when the 'cuda' feature is part of the active environment:
+[feature.cuda.target.win-64.activation.env]
+PATH = "%CONDA_PREFIX%\\Library\\bin;%PATH%"
+
+[feature.cuda.target.linux-64.activation.env]
+LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:${LD_LIBRARY_PATH:-}"
+
+# Dev feature
+[feature.dev.dependencies]
+pytest = "*"
+ruff   = "*"
+
+[feature.dev.pypi-dependencies]
+build = "*"
+validate-pyproject = { extras = ["all"] }
+
+# ---------------- ENVIRONMENTS ---------------- #
+
+[environments]
+default = { solve-group = "default" }
+cuda    = { features = ["cuda"], solve-group = "default" }
+nometal = { features = ["nometal"], solve-group = "default" }
+dev     = { features = ["dev"],  solve-group = "default" }
+cuda-dev= { features = ["cuda","dev"], solve-group = "default" }

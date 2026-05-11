@@ -33,7 +33,6 @@
 package cirb.oocytor;
 
 import fiji.util.gui.GenericDialogPlus;
-import ij.IJ;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
@@ -48,13 +47,14 @@ import javax.swing.ImageIcon;
 
 public class GetCortex implements PlugIn
 {
-	ImagePlus imp;
+	private ImagePlus imp;
 	Calibration cal;
 	RoiManager rm;
 	String dir = "";
-	String modeldir = "";
+	private String model_name = "";
+	private String model_path = "";
 	Utils util;
-        Network net;
+    //Network net;
 
 	int threshold = 100;
 	int smoothRes = 5;
@@ -63,7 +63,11 @@ public class GetCortex implements PlugIn
 	boolean visible = true;
         //boolean twoPass = false;
 	boolean locate = false;
-        final ImageIcon icon = new ImageIcon(this.getClass().getResource("/oo_logo.png"));
+	private boolean debug = true;
+	private boolean ask_directory = false; // if work on opened image, or on a folder
+	private boolean save_rois = true; // save results ROI to a zip file
+    final ImageIcon icon = new ImageIcon(this.getClass().getResource("/oo_logo.png"));
+    private String[] models = {"cortex_mouse"};
 
 
 	/** \brief Dialog window 
@@ -71,16 +75,22 @@ public class GetCortex implements PlugIn
 	  */
 	public boolean getParameters()
 	{
+		if ( ask_directory )
+		{
+			save_rois = true;
+			visible = false;
+		}
+		
 		GenericDialogPlus gd = new GenericDialogPlus("Options", IJ.getInstance() );
 		Font boldy = new Font("SansSerif", Font.CENTER_BASELINE, 15);
 		gd.setFont(boldy);
 		//gd.addMessage("----------------------------------------------------------------------------------------------- ");
 		gd.addNumericField("smooth_contour :", smoothRes);
 		gd.addNumericField("reach_proportion :", preach);
-		gd.addNumericField("nb_networks :", nnet);
+		//gd.addNumericField("nb_networks :", nnet);
 		gd.addCheckbox("visible_mode", visible);
-                //gd.addCheckbox("two_pass", twoPass);
-                gd.addCheckbox("locate", locate);
+        //gd.addCheckbox("two_pass", twoPass);
+        gd.addCheckbox("locate", locate);
 				
 //gd.setBackground(new Color(140,160,185));
 		gd.setBackground(new Color(100,140,170));
@@ -91,22 +101,37 @@ public class GetCortex implements PlugIn
 		iconimg.setImage(icon.getImage());
 		gd.addImage(iconimg);
                 
-                gd.addDirectoryField("model_path:", modeldir);
-                gd.addDirectoryField("images_directory:", dir);
+        gd.addChoice( "Choose model:", models, models[0] );
+		//gd.addDirectoryField("model_path:", modeldir);
+        if ( !ask_directory )
+        {
+           gd.addMessage( "Processing opened image. Close it if you wish to choose a directory instead" );
+           gd.addCheckbox( "save_rois", save_rois );
+        }
+        else
+        {
+           gd.addDirectoryField("images_directory:", dir);
+        }
 
 		gd.showDialog();
 		if (gd.wasCanceled()) return false;
 
 		smoothRes = (int) gd.getNextNumber();
 		preach = (double) gd.getNextNumber();
-		nnet = (int) gd.getNextNumber();
+		//nnet = (int) gd.getNextNumber();
 		visible = gd.getNextBoolean();
                 //twoPass = gd.getNextBoolean();
-                locate = gd.getNextBoolean();
+         locate = gd.getNextBoolean();
                 
-                modeldir = gd.getNextString();
-		dir = gd.getNextString();	
-                return true;
+         model_name = gd.getNextChoice();
+         //modeldir = gd.getNextString();
+         if ( ask_directory )
+        	 dir = gd.getNextString();	
+         else
+        	 save_rois = gd.getNextBoolean();
+         
+         // All done
+        return true;
 	}
 
 
@@ -115,11 +140,14 @@ public class GetCortex implements PlugIn
 	  */
 	public void openResetImage(String imgname)
 	{
-		String ext = imgname.substring(imgname.lastIndexOf('.'));
-		if ( ext.equals(".tif") )
-			imp = IJ.openVirtual(imgname);
-		else
-			imp = IJ.openImage(imgname);
+		if ( ask_directory )
+		{
+			String ext = imgname.substring(imgname.lastIndexOf('.'));
+			if ( ext.equals(".tif") )
+				imp = IJ.openVirtual(imgname);
+			else
+				imp = IJ.openImage(imgname);
+		}
 		//imp = IJ.getImage();
 		cal = util.initCalibration(imp);
 		if (visible) imp.show();
@@ -284,7 +312,7 @@ public class GetCortex implements PlugIn
 		IJ.run("Select None");
 		util.close(bin);
                 
-                imp.hide();	
+         imp.hide();	
         }
         
         /** Find approximate location and size of oocyte */
@@ -342,7 +370,9 @@ public class GetCortex implements PlugIn
             
             // Segment the cropped images
             ImagePlus impcrop = new ImagePlus("cropped", cropstack);               
-            ImagePlus unet = net.runUnet(impcrop, dir+inname, nnet, modeldir, 800, visible);
+            //ImagePlus unet = net.runUnet(impcrop, dir+inname, nnet, modeldir, 800, visible);
+            RunUNet runet = new RunUNet();
+            ImagePlus unet = runet.runUnet( impcrop, model_path, locate, debug );
             if ( visible ) unet.show();
                 
             IJ.showStatus("Binary to Rois...");
@@ -439,7 +469,9 @@ public class GetCortex implements PlugIn
             //impcrop.show();
             //IJ.run("stop");
                             
-            ImagePlus unet = net.runUnet(impcrop, dir+inname, nnet, modeldir, 800, visible);
+            //ImagePlus unet = net.runUnet(impcrop, dir+inname, nnet, modeldir, 800, visible);
+            RunUNet runet = new RunUNet();
+            ImagePlus unet = runet.runUnet( impcrop, model_path, locate, debug );
             if ( visible ) unet.show();
                 
             IJ.showStatus("Binary to Rois...");
@@ -495,7 +527,7 @@ public class GetCortex implements PlugIn
 		util.keepRois(0, bin);
 		IJ.run("Select None");
 		util.close(bin); 
-                imp.hide();
+        imp.hide();
         }
         
         
@@ -575,7 +607,8 @@ public class GetCortex implements PlugIn
 	public void getCortexImage(String inname)
 	{
 		IJ.log("Doing "+dir+inname);
-		IJ.run("Close All", "");
+		if ( ask_directory )
+			IJ.run("Close All", "");
 		rm.reset();
 
 		String imgname = dir+inname;
@@ -583,14 +616,16 @@ public class GetCortex implements PlugIn
 		openResetImage(imgname);
 		util.reOrder(imp);
                 
-                IJ.showStatus("Segment oocyte with neural networks...");    
+        IJ.showStatus("Segment oocyte with neural networks...");    
                 if (locate)
                 {
                     localizeAndRunOocyte(inname);
                 }
                 else 
                 {
-                    ImagePlus unet = net.runUnet(imp, dir+inname, nnet, modeldir, 800, visible);
+                    //ImagePlus unet = net.runUnet(imp, dir+inname, nnet, modeldir, 800, visible);
+                    RunUNet runet = new RunUNet();
+                	ImagePlus unet = runet.runUnet( imp, model_path, locate, debug );
                     if ( visible ) unet.show();
                     // extract contours from the binary image
                     getCortexFromUnet(unet);
@@ -602,70 +637,100 @@ public class GetCortex implements PlugIn
                     }*/
                 }
                 
-                // smooth a little and finer match to cortex
+        // smooth a little and finer match to cortex
 		refineCortex();
 
-                IJ.run(imp, "Select None", "");
+        IJ.run(imp, "Select None", "");
 		rm.runCommand(imp,"Deselect");
-		String purinname = inname.substring(0, inname.lastIndexOf('.'));
-		rm.runCommand("Save", dir+"contours"+File.separator+purinname+"_UnetCortex.zip");
-		util.close(imp);	
+		if (save_rois )
+		{
+			String purinname = inname.substring(0, inname.lastIndexOf('.'));
+			rm.runCommand("Save", dir+"contours"+File.separator+purinname+"_UnetCortex.zip");
+		}
+		if ( ask_directory )
+			util.close(imp);	
 	}
-        
+    
+	/** Get the path to the model local donwload or path */
+	public void getModelPath()
+	{
+		switch ( model_name ) 
+		{
+			case "cortex_mouse": 
+			{
+				model_path = util.getModelDir( "cortex/init" );
+				break;
+			}
+			default:
+				throw new IllegalArgumentException("Unexpected value: " +  model_name);
+		}
+	}
   
 
 	public void run(String arg)
 	{
-            
-                modeldir = IJ.getDirectory("imagej")+File.separator+"models"+File.separator+arg+File.separator;
+		imp = WindowManager.getCurrentImage();  
+		if ( imp == null )
+		{
+			ask_directory = true;
+		}
+		else
+		{
+			ask_directory = false;
+			dir = IJ.getDirectory( "image" );
+			System.out.println( "Image located in "+dir );
+		}
+        
+        //modeldir = IJ.getDirectory("imagej")+File.separator+"models"+File.separator+arg+File.separator;
 		// get parameters, initialize
 		if ( !getParameters() ) { return; }
-		IJ.run("Close All");
+		
 		rm = RoiManager.getInstance();
 		if ( rm == null )
 			rm = new RoiManager();
 		rm.reset();
 		util = new Utils();
 
-                if (! dir.endsWith(File.separator))
-                {
-                    dir = dir + File.separator;
-                }
-                if (! modeldir.endsWith(File.separator))
-                {
-                    modeldir = modeldir + File.separator;
-                }
-                net = new Network();
-                net.init();
-                
-		// Performs on all images in chosen directory
-		File thedir = new File(dir); 
-		File[] fileList = thedir.listFiles(); 
-		File directory = new File(dir+"contours");
-		if (! directory.exists())
-			directory.mkdir();
+        if (! dir.endsWith(File.separator))
+        {
+            dir = dir + File.separator;
+        }
 
-		for (File fily : fileList) 
-		{
-			if ( fily.isFile() )
-			{
-				String inname = fily.getName();
-				int j = inname.lastIndexOf('.');
-				if (j > 0)
-				{
-					String extension = inname.substring(j);
-					if ( extension.equals(".tif") | extension.equals(".TIF") | extension.equals(".png") | extension.equals(".jpg") | extension.equals(".JPG") )
-					{
-						getCortexImage( inname );
-					}   
-                                        
-				}
-				System.gc(); // garbage collector
-			}
-		}
-                net.end();
-                net = null;
-                System.gc(); // garbage collector
+     	File directory = new File(dir+"contours");
+     	if (! directory.exists())
+     		directory.mkdir();
+     	
+		// Performs on all images in chosen directory
+        if ( ask_directory )
+        {
+        	File thedir = new File(dir); 
+        	File[] fileList = thedir.listFiles(); 
+
+
+        	for (File fily : fileList) 
+        	{
+        		if ( fily.isFile() )
+        		{
+        			String inname = fily.getName();
+        			int j = inname.lastIndexOf('.');
+        			if (j > 0)
+        			{
+        				String extension = inname.substring(j);
+        				if ( extension.equals(".tif") | extension.equals(".TIF") | extension.equals(".png") | extension.equals(".jpg") | extension.equals(".JPG") )
+        				{
+        					getCortexImage( inname );
+        				}                       
+        			}
+        			System.gc(); // garbage collector
+        		}
+        	}
+        }
+        else
+        {
+        	String inname = imp.getTitle();
+        	getCortexImage( inname );
+        }
+
 	}
 
 

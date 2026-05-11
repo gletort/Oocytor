@@ -185,7 +185,7 @@ public class GetNucleus implements PlugIn
 	{
 		ImagePlus resized = resizeImage();
 		final ImgPlus< T > img = ImagePlusAdapter.wrapImgPlus( resized);
-		final String script = getScript( this.getClass().getResource("nucleus_detector.py" ) );
+		final String script = Utils.getScript( this.getClass().getResource("nucleus_detector.py" ) );
 		
 		final Map< String, Object > inputs = new HashMap<>();
 		inputs.put( "image", NDArrays.asNDArray( img ) );
@@ -203,8 +203,8 @@ public class GetNucleus implements PlugIn
 		try {
 			env = Appose // the builder
 					.pixi( this.getClass().getResource("pixi.toml") ) // we chose pixi as the environment manager
-					.subscribeProgress( this::showProgress ) // report progress visually
-					.subscribeOutput( this::showProgress ) // report output visually
+					.subscribeProgress( Utils::showProgress ) // report progress visually
+					.subscribeOutput( Utils::showProgress ) // report output visually
 					.subscribeError( IJ::log ) // log problems
 			        .environment( envName )  // choose env based on OS (to get cuda or not)
 					.build();
@@ -214,7 +214,7 @@ public class GetNucleus implements PlugIn
 			IJ.error( "Error in creating/initializing the python environment: "+e.toString() );
 			e.printStackTrace();
 		} // create the environment
-		hideProgress();
+		util.hideProgress();
 
 		
 		/*
@@ -325,74 +325,7 @@ public class GetNucleus implements PlugIn
 		
 	}
 
-	
-	/*
-	 * The Python script.
-	 * 
-	 * This is the Python code that will be run by the service. It is loaded from an existing
-	 * .py file, placed in the URL location */
-	public static String getScript( URL python_script )
-	{
-		String script = "";
-		try {
-			final URL scriptFile = python_script;
-			script = IOUtils.toString(scriptFile, StandardCharsets.UTF_8);
-			
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
-		return script;
-	}
-	
 
-private volatile JDialog progressDialog;
-
-private volatile JProgressBar progressBar;
-
-private void showProgress( final String msg )
-{
-	showProgress( msg, null, null );
-}
-
-private void showProgress( final String msg, final Long cur, final Long max )
-{
-	EventQueue.invokeLater( () ->
-	{
-		if ( progressDialog == null ) {
-			final Window owner = IJ.getInstance();
-			progressDialog = new JDialog( owner, "Fiji ♥ Appose" );
-			progressDialog.setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
-			progressBar = new JProgressBar();
-			progressDialog.getContentPane().add( progressBar );
-			progressBar.setFont( new Font( "Courier", Font.PLAIN, 14 ) );
-			progressBar.setString(
-				"--------------------==================== " +
-				"Building Python environment " +
-				"====================--------------------"
-			);
-			progressBar.setStringPainted( true );
-			progressBar.setIndeterminate( true );
-			progressDialog.pack();
-			progressDialog.setLocationRelativeTo( owner );
-			progressDialog.setVisible( true );
-		}
-		if ( msg != null && !msg.trim().isEmpty() ) progressBar.setString( "Building Python environment: " + msg.trim() );
-		if ( cur != null || max != null ) progressBar.setIndeterminate( false );
-		if ( max != null ) progressBar.setMaximum( max.intValue() );
-		if ( cur != null ) progressBar.setValue( cur.intValue() );
-	} );
-}
-private void hideProgress()
-{
-	EventQueue.invokeLater( () ->
-	{
-		if ( progressDialog != null )
-			progressDialog.dispose();
-		progressDialog = null;
-	} );
-}
-	
-	
 	public void run( String arg )
 	{
 		imp = WindowManager.getCurrentImage();  

@@ -3,14 +3,44 @@ package cirb.oocytor;
 
 import ij.*;
 import ij.gui.*;
+import ij.io.FileInfo;
 import ij.plugin.frame.*;
 import ij.measure.*;
 import ij.plugin.RoiScaler;
 import ij.plugin.ZProjector;
 import ij.process.FloatPolygon;
 import ij.process.ImageStatistics;
+
+import java.awt.EventQueue;
+import java.awt.Font;
 import java.awt.Polygon;
+import java.awt.Window;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import javax.swing.JDialog;
+import javax.swing.JProgressBar;
+import javax.swing.WindowConstants;
+
+import org.apache.commons.io.IOUtils;
+
 
 /**
  * \brief Utility functions for Oocytor plugins
@@ -705,6 +735,310 @@ public class Utils
 		if ( y > ip.getHeight() ) return -4;	
 		return 0;
 	}
+	
+	/*
+	 * The Python script.
+	 * 
+	 * This is the Python code that will be run by the service. It is loaded from an existing
+	 * .py file, placed in the URL location */
+	public static String getScript( URL python_script )
+	{
+		String script = "";
+		try {
+			final URL scriptFile = python_script;
+			script = IOUtils.toString(scriptFile, StandardCharsets.UTF_8);
+			
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
+		return script;
+	}
+	
 
+	private static volatile JDialog progressDialog;
+
+	private static volatile JProgressBar progressBar;
+
+	public static void showProgress( final String msg )
+	{
+		showProgress( msg, null, null );
+	}
+
+	public static void showProgress( final String msg, final Long cur, final Long max )
+	{
+		EventQueue.invokeLater( () ->
+		{
+			if ( progressDialog == null ) {
+				final Window owner = IJ.getInstance();
+				progressDialog = new JDialog( owner, "Fiji ♥ Appose" );
+				progressDialog.setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
+				progressBar = new JProgressBar();
+				progressDialog.getContentPane().add( progressBar );
+				progressBar.setFont( new Font( "Courier", Font.PLAIN, 14 ) );
+				progressBar.setString(
+					"--------------------==================== " +
+					"Building Python environment " +
+					"====================--------------------"
+				);
+				progressBar.setStringPainted( true );
+				progressBar.setIndeterminate( true );
+				progressDialog.pack();
+				progressDialog.setLocationRelativeTo( owner );
+				progressDialog.setVisible( true );
+			}
+			if ( msg != null && !msg.trim().isEmpty() ) progressBar.setString( "Building Python environment: " + msg.trim() );
+			if ( cur != null || max != null ) progressBar.setIndeterminate( false );
+			if ( max != null ) progressBar.setMaximum( max.intValue() );
+			if ( cur != null ) progressBar.setValue( cur.intValue() );
+		} );
+	}
+	public static void hideProgress()
+	{
+		EventQueue.invokeLater( () ->
+		{
+			if ( progressDialog != null )
+				progressDialog.dispose();
+			progressDialog = null;
+		} );
+	}
+	/**
+	 * Download and extract a .zip file if necessary 
+	 * @throws IOException
+	 */
+	public static String downloadAndExtract( String destinationDir, String modelName, String model_URL ) throws IOException 
+	{
+	        
+	        Path modelPath = Path.of( destinationDir, modelName ); // model specific directory in .local/dextrusion
+	        System.out.println(""+modelPath.toString());
+	        
+	        // Check if destination exists and is not empty
+	        if (Files.exists( modelPath ) && 
+	            Files.isDirectory( modelPath ) && 
+	            Files.list( modelPath ).findAny().isPresent()) 
+	        {
+	            //System.out.println("Destination already exists and is not empty.");
+	            return modelPath.toAbsolutePath().toString();
+	        }
+	        
+	        // Download with progress
+	        String zipfile = Path.of( destinationDir, modelName+".zip").toString();
+	        System.out.println(""+zipfile);
+	        
+	        downloadFileWithProgress( model_URL, zipfile );
+	        
+	        // Extract
+	        extractZip( zipfile, destinationDir.toString() );
+	        
+	        // Cleanup
+	        Files.deleteIfExists( Paths.get( zipfile ) );
+	        return modelPath.toAbsolutePath().toString();
+	    }
+	    
+		/** Download .zip file and show progress of download */
+	private static void downloadFileWithProgress(String fileUrl, String destinationPath) 
+	        throws IOException 
+	{
+	    
+		 URI uri = URI.create( fileUrl );
+         URL url = uri.toURL();
+         System.out.println(""+url.toString());
+         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+	    
+	    // Disable automatic decompression
+	    connection.setRequestProperty("Accept-Encoding", "identity");
+	    connection.setInstanceFollowRedirects(true);
+	    //connection.setConnectTimeout(10000); // 10 seconds
+        //connection.setReadTimeout(30000); // 30 seconds
+       
+	    //connection.connect();
+	    
+	    int responseCode = connection.getResponseCode();
+	    if (responseCode != HttpURLConnection.HTTP_OK) 
+	    {
+	        throw new IOException("Failed to download. HTTP error code: " + responseCode);
+	    }
+	    
+	    long fileSize = connection.getContentLengthLong();
+	    
+	    try (InputStream in = connection.getInputStream()) {
+	        
+	        // Use custom InputStream wrapper to track progress
+	        ProgressInputStream progressIn = new ProgressInputStream(in, fileSize);
+	        
+	        // Copy directly to file
+	        Files.copy(progressIn, Paths.get(destinationPath), 
+	                   StandardCopyOption.REPLACE_EXISTING);
+	        
+	        System.out.println("\nDownload complete!");
+	    } finally {
+	        connection.disconnect();
+	    }
+	}
+
+	// Progress tracking wrapper
+	static class ProgressInputStream extends FilterInputStream {
+	    private long totalBytesRead = 0;
+	    private long fileSize;
+	    private int lastProgress = 0;
+	    
+	    public ProgressInputStream(InputStream in, long fileSize) {
+	        super(in);
+	        this.fileSize = fileSize;
+	    }
+	    
+	    @Override
+	    public int read(byte[] b, int off, int len) throws IOException {
+	        int bytesRead = super.read(b, off, len);
+	        if (bytesRead > 0) {
+	            totalBytesRead += bytesRead;
+	            if (fileSize > 0) {
+	                int progress = (int) ((totalBytesRead * 100) / fileSize);
+	                if (progress != lastProgress) {
+	                    System.out.print("\rDownloading: " + progress + "%");
+	                    lastProgress = progress;
+	                }
+	            }
+	        }
+	        return bytesRead;
+	    }
+	}
+	    /** 
+	     * Extract the content of the .zip file 
+	     * @param zipFilePath
+	     * @param destinationDir
+	     * @throws IOException
+	     */
+	    private static void extractZip( String zipFilePath, String destinationDir ) 
+	            throws IOException 
+	    {
+	        byte[] buffer = new byte[8192];
+	        
+	        try (ZipInputStream zis = new ZipInputStream(
+	                new BufferedInputStream(new FileInputStream(zipFilePath)))) 
+	        {
+	            
+	            ZipEntry entry;
+	           
+	            while ((entry = zis.getNextEntry()) != null) 
+	            {
+	                Path filePath = Paths.get( destinationDir, entry.getName()) ;
+	                //System.out.println(""+entry.getName());
+	                
+	                // Security check
+	                if ( !filePath.normalize().startsWith(destinationDir) ) 
+	                {
+	                    throw new IOException("Bad zip entry");
+	                }
+	                
+	                if (entry.isDirectory()) 
+	                {
+	                    Files.createDirectories(filePath);
+	                    System.out.println(""+filePath);
+	                } 
+	                else 
+	                {
+	                    Files.createDirectories( filePath.getParent() );
+	                    
+	                    try (BufferedOutputStream bos = new BufferedOutputStream(
+	                            new FileOutputStream(filePath.toFile()))) {
+	                        int len;
+	                        while ((len = zis.read(buffer)) > 0) {
+	                            bos.write(buffer, 0, len);
+	                        }
+	                    }
+	                }
+	                System.out.println("Extracted: " + entry.getName());
+	            }
+	        }
+	    }
+	
+	    public static String createLocalDirectory( String dirname ) 
+	    {
+	        try 
+	        {
+	            // Create directory in user's .local folder if not there
+	            String userHome = System.getProperty( "user.home" );
+	            Path locals = Paths.get( userHome, ".local" );
+	            if ( !Files.exists( locals ) ) 
+		        {
+		            Files.createDirectories( locals );
+		        } 
+		        
+		        Path localshare = Paths.get( userHome, ".local", "share" );
+	            if ( !Files.exists( localshare ) ) 
+		        {
+		            Files.createDirectories( localshare );
+		        } 
+		        Path localDir = Paths.get(userHome, ".local", "share", dirname );
+		        
+		        // Check if exists, create if not
+		        if ( !Files.exists(localDir) ) 
+		        {
+		            Files.createDirectories(localDir);
+		            System.out.println("Created directory: " + localDir);
+		        } 
+		        
+		        return localDir.toString();    
+	         } 
+	        catch (IOException e) 
+	        {
+	            e.printStackTrace();
+	        }
+	        return "";
+	   }
+	    
+	    /**
+	     * Get the full path of the currently opened image
+	     * @param imp
+	     * @return
+	     */
+	  public static String getFullPath( ImagePlus imp )
+	  {
+		FileInfo fileInfo = imp.getOriginalFileInfo();
+		if (fileInfo != null && fileInfo.fileName != null) 
+		{
+		    String fileName = fileInfo.fileName;
+		    String directory = fileInfo.directory;
+		    
+		    if (directory != null && fileName != null) 
+		    {
+		        String fullPath = new File(directory, fileName).getAbsolutePath();
+		        IJ.log("Movie full path: " + fullPath);
+		        return fullPath;
+		    } 
+		    else if (fileName != null) 
+		    {
+		    	fileName = imp.getTitle();
+		        directory = IJ.getDirectory( "file" );  // most recent directory
+		        String fullPath = new File(directory, fileName).getAbsolutePath();
+		        IJ.log("Movie full path: " + fullPath);
+		        return fullPath;
+		    }
+		} 
+		else 
+		{
+		    System.out.println("No file information available");
+		}
+		return "";
+	  }	
+	  
+	  /** Download and unzip if necessary the model from github, and return the path to it */
+	  public String getModelDir( String model_path )
+	  {
+		// Download and install if necessary the model
+		String model_url = "https://github.com/gletort/Oocytor/raw/refs/heads/main/models/"+model_path+".zip";
+		String model_local_dir = createLocalDirectory( "oocytor" );
+
+		try 
+		{
+			String model_dir = downloadAndExtract( model_local_dir, model_path, model_url );
+			return model_dir;
+		}
+		catch ( final IOException e )
+		{
+			IJ.error( "Failed to find/download the models: "+e );	
+		}
+		return null;
+	  }
       
 }
