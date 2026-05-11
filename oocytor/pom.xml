@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
 
     <modelVersion>4.0.0</modelVersion>
 	<parent>
@@ -11,7 +12,7 @@
 
     <groupId>cirb</groupId>
     <artifactId>oocytor_</artifactId>
-    <version>0.6-SNAPSHOT</version>
+    <version>0.7-SNAPSHOT</version>
     <packaging>jar</packaging>
    
    <name>Oocytor</name>
@@ -93,7 +94,6 @@
 	<!-- Use Java 21. -->
 		<scijava.jvm.version>21</scijava.jvm.version>
 		<scijava.jvm.build.version>[21,)</scijava.jvm.build.version>
-
 		<appose.version>0.11.0</appose.version>
 		<imglib2-appose.version>0.9.0</imglib2-appose.version>
 	</properties>
@@ -107,21 +107,20 @@
 </repositories>
 
 <dependencies>
-       <dependency>
-        <groupId>net.imagej</groupId>
-        <artifactId>ij</artifactId>
-        </dependency>
-    <dependency>
-        <groupId>org.scijava</groupId>
-        <artifactId>scijava-common</artifactId>
-    </dependency>
-    <dependency>
-       <groupId>de.csbdresden</groupId>
-	<artifactId>csbdeep</artifactId>
-	<version>0.3.5-SNAPSHOT</version>
-	</dependency>
-	
-	<!-- ImgLib2 dependencies -->
+		<!-- ImageJ 1.x dependency -->
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>ij</artifactId>
+		</dependency>
+
+		<!-- Appose dependencies -->
+		<dependency>
+			<groupId>org.apposed</groupId>
+			<artifactId>appose</artifactId>
+			<version>${appose.version}</version>
+		</dependency>
+		
+		<!-- ImgLib2 dependencies -->
 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2-appose</artifactId>
@@ -132,14 +131,23 @@
 			<artifactId>imglib2-ij</artifactId>
 		</dependency>
 
-    <dependency>
-        <groupId>net.imagej</groupId>
-        <artifactId>imagej-common</artifactId>
-    </dependency>
-    <dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej</artifactId>
+			<!--<scope>test</scope>-->
+		</dependency>
+
+	<dependency>
         <groupId>sc.fiji</groupId>
         <artifactId>fiji-lib</artifactId>
+    </dependency> 
+
+  <!-- 
+	<dependency>
+	 <groupId>net.imagej</groupId>
+        <artifactId>imagej-common</artifactId>
     </dependency>
+    -->
 </dependencies>
 
 </project>

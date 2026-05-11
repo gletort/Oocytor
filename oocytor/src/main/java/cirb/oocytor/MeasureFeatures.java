@@ -68,7 +68,7 @@ public class MeasureFeatures implements PlugIn
 	double pivsize = 0.227; // size of image in pixel for piv
 	int maxslice = -1; // don't do all slices
         
-        int precision = 5; // number of digits
+    int precision = 5; // number of digits
 
         // decoration
         final ImageIcon icon = new ImageIcon(this.getClass().getResource("/oo_logo.png"));
@@ -387,7 +387,7 @@ public class MeasureFeatures implements PlugIn
 			myrt.addValue("PerivThicknessMin", thickPeriv[0]*scalexy);
 			myrt.addValue("PerivThicknessMax", thickPeriv[1]*scalexy);
 			myrt.addValue("PerivThicknessStd", thickPeriv[3]*scalexy);
-                        myrt.addValue("PerivThicknessCoefVar", thickPeriv[3]/thickPeriv[2]);
+            myrt.addValue("PerivThicknessCoefVar", thickPeriv[3]/thickPeriv[2]);
 		}
 
 		myrt.addResults();
@@ -401,7 +401,7 @@ public class MeasureFeatures implements PlugIn
 		// open, reset
 		String imgname = dir+inname;
 		imp = IJ.openVirtual(imgname);
-                purname = inname.substring(0, inname.lastIndexOf('.'));
+        purname = inname.substring(0, inname.lastIndexOf('.'));
 		//imp = IJ.getImage();
 		util.initCalibration(imp);
 		rm.runCommand(imp,"Deselect");

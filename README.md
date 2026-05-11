@@ -17,7 +17,6 @@ Fiji plugin to segment oocyte and zona pellucida contours from transmitted light
 ## Presentation
 Oocytor is a Fiji plugin (developped in Java). It offers the possibility to segment oocyte contours from transmitted light images, based on U-Net like neural networks which were trained on both mouse and human oocytes (in prophase and meiosis I) acquired in different conditions for robutness. It can also extract hundreds morphological features to characterize numerically the oocyte, e.g. its perimeter, circularity...  
 
-
 ### Segmentation
 `Oocytor` uses neural networks for the segmentation. It was trained with images of individual oocytes placed in the center at different resolutions.
 Hence, to use it you need to have a unique full oocyte in the image. When you have several oocytes in the same image, it is possible to separate them automatically with our [individualize macro](#macros "macro"). 
@@ -37,7 +36,17 @@ To use it, the plugin ask for 3 parameters:
 
 ##### Models proposed
 We tested different networks trained on either mouse and human data, or on mouse, human and sea urchin data (see our publication for more details).
-In our `models/cortex` folder of this repository, we put the 3 different types of networks available: `full` has been trained with all data, `init` was trained on mouse and human data, and `retrained` was focused on sea urchin data.
+
+Since Oocytor 1.0, the models available in this repository are proposed directly in the interface that pops-up. 
+The plugin will automatically download it and install it in a local director (in .local/share/oocytor directory).
+
+Available models are:
+
+* `cortex/mouse`: to segment Oocyte membrane, trained on mouse and human oocyte data, with more representation from mouse data.
+* `cortex/general`: to segment Oocyte membrane, trained on mouse/human/sea urchins data (called `full` in earlier versions).
+
+In earlier version:
+In early versions of our `models/cortex` folder of this repository, we put the 3 different types of networks available: `full` has been trained with all data, `init` was trained on mouse and human data, and `retrained` was focused on sea urchin data.
 
 #### Retrain neural networks
 
@@ -72,20 +81,33 @@ It can be used as a pretrain network to retrain it with different oocytes.
 
 ## Installation
 
-A compiled version is available in this release as a `.jar` file called [`oocytor_0.0.jar`](./oocytor/ "File link"). To install it, simply put this file in the `plugins` folder of ImageJ/Fiji and restart Fiji. 
+### Standard installation
+Oocytor is now installable via Fiji update sites.
+Go to `Help>Update`, then select `Manage Update Sites`
+Add the new update site `OocyteJ`, select `Apply` and restart Fiji.
+
+You can also download the source code and compile it directly. As a lot of Fiji plugins, it is organized as a `Maven` project.
+
+### Older versions
+To use a version of Oocytor anterior at version 1.0:
+
+A compiled version is available in this release as a `.jar` file called [`oocytor_0.*.jar`](./oocytor/prev_release "File link"). To install it, simply put this file in the `plugins` folder of ImageJ/Fiji and restart Fiji. 
 You also need to put the neural networks for the segmentation in Fiji. 
 For this, copy the `models` folder in the main Fiji directory (or insert it in the `models` folder of Fiji if it exists already).
 Oocytor uses other Fiji plugins which you may have to install if they are not already installed. See the following section.
 
-You can also download the source code and compile it directly. As a lot of Fiji plugins, it is organized as a `Maven` project.
+For the previous versions, you also need this dependency:
+* [CSBDeep_fiji](https://github.com/CSBDeep/CSBDeep_fiji#imagej-update-site "CSBDeep install"): this plugin is used in the segmentation part. To install it, add it in Fiji update sites (go to `Help>Update..`, clik on `Manage update sites`, look for `CSBDeep` and select it)
+
 
 ### Dependencies
 Oocytor uses the following Fiji plugins:
-* [CSBDeep_fiji](https://github.com/CSBDeep/CSBDeep_fiji#imagej-update-site "CSBDeep install"): this plugin is used in the segmentation part. To install it, add it in Fiji update sites (go to `Help>Update..`, clik on `Manage update sites`, look for `CSBDeep` and select it)
 * [FeatureJ](https://imagescience.org/meijering/software/featurej/ "FeatureJ website"): this plugin in the features part only. Add the `.jar` files given in FeatureJ website to the `plugins` folder of Fiji.		
 
 ### Use
-Once installed, the plugin can be found in Fiji in the `Plugins>CIRB>Oocytor` menu.
+Once installed, the plugin can be found in Fiji in the `Plugins>Oocytes>Oocytor` menu.
+
+With earlier versions than 1.0, once installed, the plugin can be found in Fiji in the `Plugins>CIRB>Oocytor` menu.
 
 ### Macros
 We put in the [`macros`](./macros "macros folder") folder of this repository several ImageJ/Fiji macros that can be usefull to automatize some parts of using `Oocytor` on several files for example.
