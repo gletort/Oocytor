@@ -17,7 +17,6 @@ Fiji plugin to segment oocyte and zona pellucida contours from transmitted light
 ## Presentation
 Oocytor is a Fiji plugin (developped in Java). It offers the possibility to segment oocyte contours from transmitted light images, based on U-Net like neural networks which were trained on both mouse and human oocytes (in prophase and meiosis I) acquired in different conditions for robutness. It can also extract hundreds morphological features to characterize numerically the oocyte, e.g. its perimeter, circularity...  
 
-
 ### Segmentation
 `Oocytor` uses neural networks for the segmentation. It was trained with images of individual oocytes placed in the center at different resolutions.
 Hence, to use it you need to have a unique full oocyte in the image. When you have several oocytes in the same image, it is possible to separate them automatically with our [individualize macro](#macros "macro"). 
@@ -95,7 +94,9 @@ Oocytor uses the following Fiji plugins:
 * [FeatureJ](https://imagescience.org/meijering/software/featurej/ "FeatureJ website"): this plugin in the features part only. Add the `.jar` files given in FeatureJ website to the `plugins` folder of Fiji.		
 
 ### Use
-Once installed, the plugin can be found in Fiji in the `Plugins>CIRB>Oocytor` menu.
+Once installed, the plugin can be found in Fiji in the `Plugins>Oocytes>Oocytor` menu.
+
+With earlier versions than 1.0, once installed, the plugin can be found in Fiji in the `Plugins>CIRB>Oocytor` menu.
 
 ### Macros
 We put in the [`macros`](./macros "macros folder") folder of this repository several ImageJ/Fiji macros that can be usefull to automatize some parts of using `Oocytor` on several files for example.
