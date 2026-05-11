@@ -1026,7 +1026,7 @@ public class Utils
 	  public String getModelDir( String model_path )
 	  {
 		// Download and install if necessary the model
-		String model_url = "https://github.com/gletort/Oocytor/raw/refs/heads/main/models/"+model_path+".zip";
+		String model_url = "https://github.com/gletort/Oocytor/raw/refs/heads/getnuclei/models/"+model_path+".zip";
 		String model_local_dir = createLocalDirectory( "oocytor" );
 
 		try 

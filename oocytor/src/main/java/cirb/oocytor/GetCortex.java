@@ -651,18 +651,15 @@ public class GetCortex implements PlugIn
 			util.close(imp);	
 	}
     
-	/** Get the path to the model local donwload or path */
+	/** Get the path to the model local download or path */
 	public void getModelPath()
 	{
-		switch ( model_name ) 
+		// from name to path
+		model_path = model_name.replace("_", "/");
+		model_path = util.getModelDir( model_path );
+		if ( model_path == null )
 		{
-			case "cortex_mouse": 
-			{
-				model_path = util.getModelDir( "cortex/init" );
-				break;
-			}
-			default:
-				throw new IllegalArgumentException("Unexpected value: " +  model_name);
+			IJ.error( "Problem to download/find local model." );
 		}
 	}
   
@@ -691,6 +688,9 @@ public class GetCortex implements PlugIn
 		rm.reset();
 		util = new Utils();
 
+		// Get the model (download if necessary) local path
+		getModelPath();
+		
         if (! dir.endsWith(File.separator))
         {
             dir = dir + File.separator;
