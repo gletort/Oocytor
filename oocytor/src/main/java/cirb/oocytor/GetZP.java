@@ -32,7 +32,6 @@ import ij.*;
 import ij.gui.*;
 import ij.io.LogStream;
 import ij.plugin.*;
-import ij.Prefs;
 import ij.plugin.frame.*;
 import ij.measure.*;
 import ij.process.ImageStatistics;
@@ -43,28 +42,35 @@ import javax.swing.ImageIcon;
 
 public class GetZP implements PlugIn 
 {
-	ImagePlus imp;
+	private ImagePlus imp;
 	Calibration cal;
 	RoiManager rm;
 	String dir;
-	String modeldir;
+	private String model_name = "";
+	private String model_path = "";
+	
 	Utils util;
-	int nnet = 2;
-	Network net;
 	final ImageIcon icon = new ImageIcon(this.getClass().getResource("/oo_logo.png"));
 	boolean visible = false;
 	boolean locate = false;   // Locate the location of the oocyte+zp structure, and run the network on cropped around it
 	int threshold = 100;      // threshold to locate oocyte
 	String contours = "Both"; // "Both", "Outer only", "Inner only"
+	private String[] models = {"zp/mouse", "zp/human"};
+	private boolean ask_directory = false; // working on opened image or on a directory
+	private boolean debug = false; // add debug prints
+	private boolean save_rois = true; // save rois to zip file
 
 	/** Initialisation of an image */
 	public void openResetImage(String imgname) 
 	{
-		String ext = imgname.substring(imgname.lastIndexOf('.'));
-		if (ext.equals(".tif"))
-			imp = IJ.openVirtual(imgname);
-		else
-			imp = IJ.openImage(imgname);
+		if ( ask_directory )
+		{
+			String ext = imgname.substring(imgname.lastIndexOf('.'));
+			if (ext.equals(".tif"))
+				imp = IJ.openVirtual(imgname);
+			else
+				imp = IJ.openImage(imgname);
+		}
 		//imp = IJ.getImage();
 		cal = util.initCalibration(imp);
 		if (visible) imp.show();
@@ -329,7 +335,7 @@ public class GetZP implements PlugIn
 		cleanSmallRois(bin);
 		if (visible) {
 			bin.hide();
-			imp.hide();
+			//imp.hide();
 		}
 		for (int i = 1; i <= imp.getNSlices(); i++) {
 			IJ.showStatus("Refine ZP Rois... " + i + "/" + imp.getNSlices());
@@ -395,7 +401,9 @@ public class GetZP implements PlugIn
             
         // Segment the cropped images
         ImagePlus impcrop = new ImagePlus("cropped", cropstack);               
-        ImagePlus unet = net.runUnet(impcrop, dir+inname, nnet, modeldir, 800, visible);
+        RunUNet runet = new RunUNet( "cortex_detector.py" );
+        ImagePlus unet = runet.runUnet( impcrop, model_path, 24, visible, debug );
+       
         if ( visible ) unet.show();
                 
         IJ.showStatus("Binary to Rois...");
@@ -471,29 +479,40 @@ public class GetZP implements PlugIn
 		else
 		{
 			// run neural network for segmentation
-			unet = net.runUnet(imp, dir + inname, nnet, modeldir, 800, visible);
+			RunUNet runet = new RunUNet( "cortex_detector.py" );
+		    unet = runet.runUnet( imp, model_path, 24, visible, debug );
 		}
 		// extract contours from the binary image, smooth a little
 		IJ.showStatus("Refine ZP Rois...");
 		getZPFromUnet(unet);
 		IJ.run(imp, "Select None", "");
 		rm.runCommand(imp, "Deselect");
-		String purinname = inname.substring(0, inname.lastIndexOf('.'));
-		rm.runCommand("Save", dir + "contours" + File.separator + purinname + "_ZP.zip");
-		util.close(imp);
+		if (save_rois)
+		{
+			String purinname = inname.substring(0, inname.lastIndexOf('.'));
+			rm.runCommand("Save", dir + "contours" + File.separator + purinname + "_ZP.zip");
+		}
+		if ( ask_directory )
+			util.close(imp);
 	}
 
 	/** \brief Dialog window 
 	  @return true if no pb, false else
 	  */
-	public boolean getParameters() {
+	public boolean getParameters() 
+	{
+		if ( ask_directory )
+		{
+			save_rois = true;
+			visible = false;
+		}
+		
 		GenericDialogPlus gd = new GenericDialogPlus("Get Zona Pellucida - Options", IJ.getInstance());
 		Font boldy = new Font("SansSerif", Font.CENTER_BASELINE, 15);
 		gd.setFont(boldy);
 		//gd.addMessage("----------------------------------------------------------------------------------------------- ");
 
 		gd.addChoice( "ZP contours:", new String[] { "Both", "Outer only", "Inner only" }, "Both");
-		gd.addNumericField("nb_networks :", nnet);
 		gd.addCheckbox("visible_mode", visible);
         gd.addCheckbox("locate", locate);
 		gd.setBackground(new Color(100, 140, 170));
@@ -502,50 +521,97 @@ public class GetZP implements PlugIn
 		iconimg.setImage(icon.getImage());
 		gd.addImage(iconimg);
 
-		gd.addDirectoryField("model_path:", modeldir);
-		gd.addDirectoryField("images_directory:", dir);
+		 gd.addChoice( "Choose model:", models, models[0] );
+			//gd.addDirectoryField("model_path:", modeldir);
+	      if ( !ask_directory )
+	      {
+	           gd.addMessage( "Processing opened image. Close it if you wish to choose a directory instead" );
+	           if ( dir == null )
+	        	   gd.addDirectoryField("main_directory:", dir);
+	           gd.addCheckbox( "save_rois", save_rois );
+	       }
+	       else
+	       {
+	           gd.addDirectoryField("images_directory:", dir);
+	       }
 
 		gd.showDialog();
 		if (gd.wasCanceled()) return false;
 
 		contours = gd.getNextChoice();
-		nnet = (int) gd.getNextNumber();
 		visible = gd.getNextBoolean();
 		locate = gd.getNextBoolean();
-		modeldir = gd.getNextString();
-		dir = gd.getNextString();
+		model_name = gd.getNextChoice();
+         //modeldir = gd.getNextString();
+         if ( ask_directory )
+        	 dir = gd.getNextString();	
+         else
+         {
+        	 if ( dir == null )
+        		 dir = gd.getNextString();	
+        	 save_rois = gd.getNextBoolean();
+         }
 
 		return true;
 	}
+	
+	/** Get the path to the model local download or path */
+	public void getModelPath()
+	{
+		// from name to path
+		//model_path = model_name.replace("_", "/");
+		model_path = util.getModelDir( model_name );
+		if ( model_path == null )
+		{
+			IJ.error( "Problem to download/find local model." );
+		}
+	}
+  
 
-	public void run(String arg) {
-		modeldir = IJ.getDirectory("imagej") + File.separator + "models" + File.separator + arg + File.separator;
-
+	public void run(String arg) 
+	{
+		imp = WindowManager.getCurrentImage();  
+		if ( imp == null )
+		{
+			ask_directory = true;
+		}
+		else
+		{
+			ask_directory = false;
+			dir = IJ.getDirectory( "image" );
+			//System.out.println( "Image located in "+dir );
+		}
+		
 		// get parameters, initialize
 		if (!getParameters()) return;
-		IJ.run("Close All");
+		
+		if ( ask_directory )
+			IJ.run("Close All");
+		
 		rm = RoiManager.getInstance();
 		if (rm == null)
 			rm = new RoiManager();
 		rm.reset();
 		util = new Utils();
-
-		if (!dir.endsWith(File.separator)) {
+		
+		// Get the model (download if necessary) local path
+		getModelPath();
+				
+		
+		if (!dir.endsWith(File.separator)) 
+		{
 			dir = dir + File.separator;
 		}
-		if (!modeldir.endsWith(File.separator)) {
-			modeldir = modeldir + File.separator;
-		}
-		net = new Network();
-		net.init();
-
-		// Performs on all images in chosen directory
-		File thedir = new File(dir);
-		File[] fileList = thedir.listFiles();
 		File directory = new File(dir + "contours");
 		if (!directory.exists())
 			directory.mkdir();
 
+		if ( ask_directory )
+		{
+		// Performs on all images in chosen directory
+		File thedir = new File(dir);
+		File[] fileList = thedir.listFiles();
+		
 		for (File fily : fileList) {
 			if (fily.isFile()) {
 				String inname = fily.getName();
@@ -559,8 +625,12 @@ public class GetZP implements PlugIn
 				}
 			}
 		}
-		net.end();
-		net = null;
-		System.gc();
+		}
+		else
+		{
+			String inname = imp.getTitle();
+        	getZP( inname );
+		}
+		
 	}
 }

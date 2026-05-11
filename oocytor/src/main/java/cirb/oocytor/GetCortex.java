@@ -374,8 +374,8 @@ public class GetCortex implements PlugIn
             // Segment the cropped images
             ImagePlus impcrop = new ImagePlus("cropped", cropstack);               
             //ImagePlus unet = net.runUnet(impcrop, dir+inname, nnet, modeldir, 800, visible);
-            RunUNet runet = new RunUNet();
-            ImagePlus unet = runet.runUnet( impcrop, model_path, locate, debug );
+            RunUNet runet = new RunUNet( "cortex_detector" );
+            ImagePlus unet = runet.runUnet( impcrop, model_path, 8, visible, debug );
             if ( visible ) unet.show();
                 
             IJ.showStatus("Binary to Rois...");
@@ -473,8 +473,8 @@ public class GetCortex implements PlugIn
             //IJ.run("stop");
                             
             //ImagePlus unet = net.runUnet(impcrop, dir+inname, nnet, modeldir, 800, visible);
-            RunUNet runet = new RunUNet();
-            ImagePlus unet = runet.runUnet( impcrop, model_path, locate, debug );
+            RunUNet runet = new RunUNet( "cortex_detector.py" );
+            ImagePlus unet = runet.runUnet( impcrop, model_path, 8, visible, debug );
             if ( visible ) unet.show();
                 
             IJ.showStatus("Binary to Rois...");
@@ -625,8 +625,8 @@ public class GetCortex implements PlugIn
                 }
                 else 
                 {
-                    RunUNet runet = new RunUNet();
-                	ImagePlus unet = runet.runUnet( imp, model_path, locate, debug );
+                    RunUNet runet = new RunUNet("cortex_detector");
+                	ImagePlus unet = runet.runUnet( imp, model_path, 8, visible, debug );
                     if ( visible ) unet.show();
                     // extract contours from the binary image
                     getCortexFromUnet(unet);

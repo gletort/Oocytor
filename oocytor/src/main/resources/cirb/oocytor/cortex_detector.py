@@ -41,9 +41,8 @@ def conv_block( nfils, inputs):
     return conv
 
 
-def build_unet(IMG_SIZE):
+def build_unet(IMG_SIZE, nfil):
     inputs = Input((IMG_SIZE, IMG_SIZE, 1))
-    nfil = 8
     
     conv1 =  conv_block( nfil, inputs)
     pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
@@ -109,7 +108,7 @@ if debug:
 images = np.array([normalise(i) for i in img]).reshape(-1, model_size, model_size, 1)
 if debug:
     task.update( f"Building model {model_path} and load weights" )
-model = build_unet( model_size )
+model = build_unet( model_size, nfeatures )
 model.load_weights( model_path+"/variables/variables" )
 
 if debug:

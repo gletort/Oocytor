@@ -30,21 +30,28 @@ import net.imglib2.type.numeric.RealType;
 
 public class RunUNet 
 {
+	private String script_name = "cortex_detector.py";
+	
+	public RunUNet( String script )
+	{
+		script_name = script;
+	}
 	
 	/**
 	 * Prepare the python environment and initialize nnInteractive to the active image
 	 */
-	public < T extends RealType< T > & NativeType< T > > ImagePlus process( ImagePlus resized, String model_path, boolean debug )
+	public < T extends RealType< T > & NativeType< T > > ImagePlus process( ImagePlus resized, String model_path, int nfeat, boolean debug )
 	{
 		
 		final ImgPlus< T > img = ImagePlusAdapter.wrapImgPlus( resized);
-		final String script = Utils.getScript( this.getClass().getResource("cortex_detector.py" ) );
+		final String script = Utils.getScript( this.getClass().getResource( script_name ) );
 		
 		final Map< String, Object > inputs = new HashMap<>();
 		inputs.put( "image", NDArrays.asNDArray( img ) );
 		inputs.put( "model_path", model_path );
 		inputs.put( "model_size", 256 );
 		inputs.put( "batch_size", 30 );
+		inputs.put( "nfeatures", nfeat );
 		inputs.put( "debug", debug ); // to catch more messages
 		
 		IJ.log( "Downloading/Installing the environment if necessary..." );
@@ -146,14 +153,13 @@ public class RunUNet
 	    }
 	
     /** \brief run all the networks, and take the average result */
-    public ImagePlus runUnet(ImagePlus imp, String model_dir, boolean show, boolean debug )
+    public ImagePlus runUnet(ImagePlus imp, String model_dir, int nfeat, boolean show, boolean debug )
     {
     	// resize the image to the network training size
 	    IJ.run(imp, "Select None", "");
 		ImagePlus resized = imp.duplicate();
 		IJ.run(resized, "Size...", "width=256 height=256 depth="+(imp.getNSlices())+" average interpolation=Bilinear");
 	    IJ.run(resized, "8-bit", "");
-       
         
         if (show) resized.show();
         ImagePlus res = null;
@@ -173,7 +179,7 @@ public class RunUNet
         {
         	IJ.showProgress( i, networks.size() );
         	Path model_path = (networks.get(i)).toAbsolutePath();
-        	ImagePlus bin = process( resized, model_path.toString(), debug );
+        	ImagePlus bin = process( resized, model_path.toString(), nfeat, debug );
 
         	if ( i >= 1) calc.run("add 32-bit stack", res, bin);
              else res = (ImagePlus) (bin.duplicate());
