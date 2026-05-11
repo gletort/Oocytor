@@ -44,7 +44,8 @@ public class FindNEBD implements PlugIn
 	Utils util;
 	final ImageIcon icon = new ImageIcon(this.getClass().getResource("/oo_logo.png"));
     boolean twins = false;
-    private String[] models = {"nebd/mouse"};
+    private String[] models = {"other_model"};
+    private String custom_dir = ""; // if model custom is custom_model, path to it
 	//private int nfeatures = 16; // nb features of the input model
 	private boolean ask_directory = false; // working on opened image or on a directory
 	private boolean debug = false; // add debug prints
@@ -72,7 +73,7 @@ public class FindNEBD implements PlugIn
             gd.addImage(iconimg);
             
             gd.addChoice( "Choose model:", models, models[0] );
-			//gd.addDirectoryField("model_path:", modeldir);
+			gd.addDirectoryField( "other_model_path:", custom_dir );
 	      if ( !ask_directory )
 	      {
 	           gd.addMessage( "Processing opened image. Close it if you wish to choose a directory instead" );
@@ -89,7 +90,7 @@ public class FindNEBD implements PlugIn
             if (gd.wasCanceled()) return false;
             
             model_name = gd.getNextChoice();
-            //modeldir = gd.getNextString();
+            custom_dir = gd.getNextString();
             if ( ask_directory )
            	 dir = gd.getNextString();	
             else
@@ -104,6 +105,11 @@ public class FindNEBD implements PlugIn
 	/** Get the path to the model local download or path */
 	public void getModelPath()
 	{
+		if ( model_name.equals("other_model") )
+		{
+			model_path = custom_dir;
+			return;
+		}
 		// from name to path
 		//model_path = model_name.replace("_", "/");
 		model_path = util.getModelDir( model_name );

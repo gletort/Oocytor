@@ -64,7 +64,8 @@ public class GetCortex implements PlugIn
 	private boolean ask_directory = false; // if work on opened image, or on a folder
 	private boolean save_rois = true; // save results ROI to a zip file
     final ImageIcon icon = new ImageIcon(this.getClass().getResource("/oo_logo.png"));
-    private String[] models = {"cortex/mouse", "cortex/general"};
+    private String[] models = {"cortex/mouse", "cortex/general", "other_model"};
+    private String custom_dir = ""; // if model custom is custom_model, path to it
 
 
 	/** \brief Dialog window 
@@ -99,6 +100,8 @@ public class GetCortex implements PlugIn
 		gd.addImage(iconimg);
                 
         gd.addChoice( "Choose model:", models, models[0] );
+    	gd.addDirectoryField( "other_model_path:", custom_dir );
+	    
 		//gd.addDirectoryField("model_path:", modeldir);
         if ( !ask_directory )
         {
@@ -657,6 +660,11 @@ public class GetCortex implements PlugIn
 	/** Get the path to the model local download or path */
 	public void getModelPath()
 	{
+		if ( model_name.equals("other_model") )
+		{
+			model_path = custom_dir;
+			return;
+		}
 		// from name to path
 		//model_path = model_name.replace("_", "/");
 		model_path = util.getModelDir( model_name );
