@@ -106,6 +106,8 @@ public class GetCortex implements PlugIn
         if ( !ask_directory )
         {
            gd.addMessage( "Processing opened image. Close it if you wish to choose a directory instead" );
+           if ( dir == null )
+        	   gd.addDirectoryField("main_directory:", dir);
            gd.addCheckbox( "save_rois", save_rois );
         }
         else
@@ -120,15 +122,19 @@ public class GetCortex implements PlugIn
 		preach = (double) gd.getNextNumber();
 		//nnet = (int) gd.getNextNumber();
 		visible = gd.getNextBoolean();
-                //twoPass = gd.getNextBoolean();
-         locate = gd.getNextBoolean();
+        //twoPass = gd.getNextBoolean();
+        locate = gd.getNextBoolean();
                 
          model_name = gd.getNextChoice();
          //modeldir = gd.getNextString();
          if ( ask_directory )
         	 dir = gd.getNextString();	
          else
+         {
+        	 if ( dir == null )
+        		 dir = gd.getNextString();	
         	 save_rois = gd.getNextBoolean();
+         }
          
          // All done
         return true;
@@ -655,8 +661,8 @@ public class GetCortex implements PlugIn
 	public void getModelPath()
 	{
 		// from name to path
-		model_path = model_name.replace("_", "/");
-		model_path = util.getModelDir( model_path );
+		//model_path = model_name.replace("_", "/");
+		model_path = util.getModelDir( model_name );
 		if ( model_path == null )
 		{
 			IJ.error( "Problem to download/find local model." );
@@ -675,7 +681,7 @@ public class GetCortex implements PlugIn
 		{
 			ask_directory = false;
 			dir = IJ.getDirectory( "image" );
-			System.out.println( "Image located in "+dir );
+			//System.out.println( "Image located in "+dir );
 		}
         
         //modeldir = IJ.getDirectory("imagej")+File.separator+"models"+File.separator+arg+File.separator;

@@ -11,7 +11,9 @@ public class Main
 		ij.launch();
 		IJ.openImage( "/home/gaelle/Ext/MIV/EXT2026_ooMass/data/test/cell1_TRANS-1-3.tif" ).show();
 		//interact.run("");
-		GetNucleus plugin = new GetNucleus();
-		plugin.run( "position" );
+		GetCortex plugin = new GetCortex();
+		plugin.run( "" );
+		//GetNucleus plugin = new GetNucleus();
+		//plugin.run( "position" );
 	}
 }

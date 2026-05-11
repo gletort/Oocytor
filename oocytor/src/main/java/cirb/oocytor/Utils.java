@@ -1026,12 +1026,16 @@ public class Utils
 	  public String getModelDir( String model_path )
 	  {
 		// Download and install if necessary the model
-		String model_url = "https://github.com/gletort/Oocytor/raw/refs/heads/getnuclei/models/"+model_path+".zip";
+		 System.out.println(model_path);
+		String aspath = model_path.replace("_", "/");
+		String model_url = "https://github.com/gletort/Oocytor/raw/refs/heads/getnuclei/models/"+aspath+".zip";
 		String model_local_dir = createLocalDirectory( "oocytor" );
 
 		try 
 		{
+			System.out.println(model_path);
 			String model_dir = downloadAndExtract( model_local_dir, model_path, model_url );
+			System.out.println(model_dir);
 			return model_dir;
 		}
 		catch ( final IOException e )
