@@ -809,7 +809,8 @@ public class Utils
 	{
 	        
 	        Path modelPath = Path.of( destinationDir, modelName ); // model specific directory in .local/dextrusion
-	        System.out.println(""+modelPath.toString());
+	        //System.out.println(""+modelPath.toString());
+	        //System.out.println(""+destinationDir);
 	        
 	        // Check if destination exists and is not empty
 	        if (Files.exists( modelPath ) && 
@@ -968,9 +969,20 @@ public class Utils
 	            if ( !Files.exists( localshare ) ) 
 		        {
 		            Files.createDirectories( localshare );
-		        } 
+		        }
+	            
+	            // if directory is a path with two directory, creates the first one
+	            if ( dirname.contains("/") )
+	            {
+	            	String root = dirname.substring( 0, dirname.indexOf("/") );
+	            	Path rootdir = Paths.get( userHome, ".local", "share", root );
+		            if ( !Files.exists( rootdir ) ) 
+			        {
+			            Files.createDirectories( rootdir );
+			        }
+	            }
 		        Path localDir = Paths.get(userHome, ".local", "share", dirname );
-		        
+		        //System.out.println("local directory: " + localDir);
 		        // Check if exists, create if not
 		        if ( !Files.exists(localDir) ) 
 		        {
@@ -1026,16 +1038,22 @@ public class Utils
 	  public String getModelDir( String model_path )
 	  {
 		// Download and install if necessary the model
-		 System.out.println(model_path);
-		String aspath = model_path.replace("_", "/");
-		String model_url = "https://github.com/gletort/Oocytor/raw/refs/heads/getnuclei/models/"+aspath+".zip";
-		String model_local_dir = createLocalDirectory( "oocytor" );
+		//System.out.println(model_path);
+		//String aspath = model_path.replace("_", "/");
+		String model_url = "https://github.com/gletort/Oocytor/raw/refs/heads/getnuclei/models/"+model_path+".zip";
+		String rootdir = "";
+		if ( model_path.contains("/") )
+		{
+			rootdir = "/" + model_path.substring( 0, model_path.indexOf("/") );
+			model_path = model_path.substring( model_path.indexOf("/")+1 );
+		}
+		String model_local_dir = createLocalDirectory( "oocytor"+rootdir );
 
 		try 
 		{
-			System.out.println(model_path);
+			//System.out.println(model_path);
 			String model_dir = downloadAndExtract( model_local_dir, model_path, model_url );
-			System.out.println(model_dir);
+			//System.out.println(model_dir);
 			return model_dir;
 		}
 		catch ( final IOException e )

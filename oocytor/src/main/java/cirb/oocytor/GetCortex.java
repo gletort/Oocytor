@@ -53,20 +53,18 @@ public class GetCortex implements PlugIn
 	private String model_name = "";
 	private String model_path = "";
 	Utils util;
-    //Network net;
-
+    
 	int threshold = 100;
 	int smoothRes = 5;
 	double preach = 0.005;
-	int nnet = 2;
 	boolean visible = true;
         //boolean twoPass = false;
 	boolean locate = false;
-	private boolean debug = true;
+	private boolean debug = false;
 	private boolean ask_directory = false; // if work on opened image, or on a folder
 	private boolean save_rois = true; // save results ROI to a zip file
     final ImageIcon icon = new ImageIcon(this.getClass().getResource("/oo_logo.png"));
-    private String[] models = {"cortex_mouse"};
+    private String[] models = {"cortex/mouse"};
 
 
 	/** \brief Dialog window 
@@ -317,7 +315,7 @@ public class GetCortex implements PlugIn
 		IJ.run("Select None");
 		util.close(bin);
                 
-         imp.hide();	
+        if (!visible || ask_directory) imp.hide();	
         }
         
         /** Find approximate location and size of oocyte */
@@ -519,7 +517,7 @@ public class GetCortex implements PlugIn
             Prefs.blackBackground = true;
             if ( bin.isInvertedLut() )
             {
-		IJ.run(bin, "Invert LUT", "stack");
+            	IJ.run(bin, "Invert LUT", "stack");
             }
 
             ImageStatistics stats = bin.getStatistics(Measurements.MEAN);
@@ -540,13 +538,13 @@ public class GetCortex implements PlugIn
          * \brief Refine the ROI for a better match of cortex
          */
         public void refineCortex()
-	{
+        {
                     IJ.run(imp, "Select None", "");
                     IJ.run(imp, "Invert", "stack");
 
                     // Enhance structures
                     ImagePlus vert = new Duplicator().run(imp);
-		    IJ.run(vert, "Convolve...", "text1=[-1 0 1\n-1 0 1\n-1 0 1] normalize stack");
+                    IJ.run(vert, "Convolve...", "text1=[-1 0 1\n-1 0 1\n-1 0 1] normalize stack");
                     ImagePlus hor = new Duplicator().run(imp);
                     //hor.show();
                     IJ.run(hor, "Convolve...", "text1=[-1 -1 -1 \n0 0 0\n1 1 1 ] normalize stack");
@@ -617,7 +615,6 @@ public class GetCortex implements PlugIn
 		rm.reset();
 
 		String imgname = dir+inname;
-		String ext = inname.substring(inname.lastIndexOf('.'));
 		openResetImage(imgname);
 		util.reOrder(imp);
                 
@@ -628,7 +625,6 @@ public class GetCortex implements PlugIn
                 }
                 else 
                 {
-                    //ImagePlus unet = net.runUnet(imp, dir+inname, nnet, modeldir, 800, visible);
                     RunUNet runet = new RunUNet();
                 	ImagePlus unet = runet.runUnet( imp, model_path, locate, debug );
                     if ( visible ) unet.show();
@@ -646,14 +642,16 @@ public class GetCortex implements PlugIn
 		refineCortex();
 
         IJ.run(imp, "Select None", "");
-		rm.runCommand(imp,"Deselect");
+		rm.runCommand( imp,"Deselect" );
 		if (save_rois )
 		{
 			String purinname = inname.substring(0, inname.lastIndexOf('.'));
 			rm.runCommand("Save", dir+"contours"+File.separator+purinname+"_UnetCortex.zip");
 		}
 		if ( ask_directory )
+		{
 			util.close(imp);	
+		}
 	}
     
 	/** Get the path to the model local download or path */

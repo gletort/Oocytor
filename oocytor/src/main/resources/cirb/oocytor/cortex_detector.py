@@ -90,6 +90,7 @@ def mean_iou(y_true, y_pred):
 
 def to_5d(arr):
     """Convert 2D or 3D array to 5D"""
+    arr = np.squeeze( arr )
     while arr.ndim < 5:
         arr = np.expand_dims(arr, axis=0)
     return arr
@@ -114,10 +115,12 @@ model.load_weights( model_path+"/variables/variables" )
 if debug:
     task.update( f"Do prediction" )
 res = model.predict( images, batch_size = batch_size )
-if debug:
-    task.update( f"Send results back in 5d shape" )
+#if debug:
+#    task.update( f"Send results back from shape {res.shape} to 5d shape" )
 res = to_5d( res )
-# ZYX -> TZCYX
+# ZYX1 -> TZCYX
 res = np.rollaxis( res, -3, -4 )
+if debug:
+    task.update( f"Send results back shape {res.shape}" )
 task.outputs["mask"] = share_as_ndarray( res )
    
