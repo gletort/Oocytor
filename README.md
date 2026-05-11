@@ -37,7 +37,17 @@ To use it, the plugin ask for 3 parameters:
 
 ##### Models proposed
 We tested different networks trained on either mouse and human data, or on mouse, human and sea urchin data (see our publication for more details).
-In our `models/cortex` folder of this repository, we put the 3 different types of networks available: `full` has been trained with all data, `init` was trained on mouse and human data, and `retrained` was focused on sea urchin data.
+
+Since Oocytor 1.0, the models available in this repository are proposed directly in the interface that pops-up. 
+The plugin will automatically download it and install it in a local director (in .local/share/oocytor directory).
+
+Available models are:
+
+* `cortex/mouse`: to segment Oocyte membrane, trained on mouse and human oocyte data, with more representation from mouse data.
+* `cortex/general`: to segment Oocyte membrane, trained on mouse/human/sea urchins data (called `full` in earlier versions).
+
+In earlier version:
+In early versions of our `models/cortex` folder of this repository, we put the 3 different types of networks available: `full` has been trained with all data, `init` was trained on mouse and human data, and `retrained` was focused on sea urchin data.
 
 #### Retrain neural networks
 
