@@ -327,7 +327,7 @@ public class GetCortex implements PlugIn
         {
             ImagePlus dup = imp.duplicate();
             IJ.run(dup, "Gaussian Blur...", "sigma=2 stack");
-            IJ.run(dup, "Variance...", "radius=10 stack"); 
+            IJ.run(dup, "Variance...", "radius=5 stack"); 
             IJ.setAutoThreshold(dup, "Mean dark");
             Prefs.blackBackground = true;
             IJ.run(dup, "Convert to Mask", "method=Mean background=Dark calculate black");
@@ -338,7 +338,7 @@ public class GetCortex implements PlugIn
             int[] deby = new int[nslices];
             int[] orig_size = new int[nslices];
             int[] zpos = new int[nslices];
-            int cropsize = 350;
+            int cropsize = 700;
             ImageStack cropstack = new ImageStack(cropsize, cropsize);
             
             // localize oocyte and copy to image to analyse
@@ -422,7 +422,7 @@ public class GetCortex implements PlugIn
             Prefs.blackBackground = true;
             if ( bin.isInvertedLut() )
             {
-		IJ.run(bin, "Invert LUT", "stack");
+            	IJ.run(bin, "Invert LUT", "stack");
             }
 
             ImageStatistics stats = bin.getStatistics(Measurements.MEAN);
@@ -430,12 +430,12 @@ public class GetCortex implements PlugIn
 		{
 			IJ.run(bin, "Invert", "stack");
 		}
-		IJ.run(bin, "Convert to Mask", "method=Default background=Light black");
-		IJ.run(bin, "Analyze Particles...", "size=100-Infinity clear include add stack");
-		util.keepRois(0, bin);
-		IJ.run("Select None");
-		util.close(bin); 
-                imp.hide();
+			IJ.run(bin, "Convert to Mask", "method=Default background=Light black");
+			IJ.run(bin, "Analyze Particles...", "size=100-Infinity clear include add stack");
+			util.keepRois(0, bin);
+			IJ.run("Select None");
+			util.close(bin); 
+            //imp.hide();
         }
         
         /** \brief Second pass: from ROI, crop and resegment */
@@ -544,19 +544,20 @@ public class GetCortex implements PlugIn
         public void refineCortex()
         {
                     IJ.run(imp, "Select None", "");
-                    IJ.run(imp, "Invert", "stack");
+                    ImagePlus dimp = new Duplicator().run(imp);
+                    IJ.run(dimp, "Invert", "stack");
 
                     // Enhance structures
-                    ImagePlus vert = new Duplicator().run(imp);
+                    ImagePlus vert = new Duplicator().run(dimp);
                     IJ.run(vert, "Convolve...", "text1=[-1 0 1\n-1 0 1\n-1 0 1] normalize stack");
-                    ImagePlus hor = new Duplicator().run(imp);
+                    ImagePlus hor = new Duplicator().run(dimp);
                     //hor.show();
                     IJ.run(hor, "Convolve...", "text1=[-1 -1 -1 \n0 0 0\n1 1 1 ] normalize stack");
                     ImageCalculator calc = new ImageCalculator();
                     calc.run("Add stack", vert, hor);
                     util.close(hor);
-                    calc.run("Average stack", imp, vert);
-                    calc.run("Average stack", imp, vert);
+                    calc.run("Average stack", dimp, vert);
+                    calc.run("Average stack", dimp, vert);
                     util.close(vert);
 
                     IJ.showStatus("Refining Rois...");
@@ -567,10 +568,10 @@ public class GetCortex implements PlugIn
                     {
                             IJ.showStatus("Refining Rois... "+i+"/"+rm.getCount());
                             Roi cur = rm.getRoi(i);
-                            imp.setSlice( cur.getPosition() );
+                            dimp.setSlice( cur.getPosition() );
                             zpos[i] = cur.getPosition();
-                            imp.setRoi(cur);
-                            cur = imp.getRoi();
+                            dimp.setRoi(cur);
+                            cur = dimp.getRoi();
 
                             // find contour+local maxima position at each angle
                             int nang = 360; //200	
@@ -585,7 +586,7 @@ public class GetCortex implements PlugIn
                             for (int j=0; j<nang; j++)
                             {	
                                     ang = ang + dang;
-                                    float[] res = getAnglePosition(cx, cy, rad, ang, cur.getFloatPolygon(), imp);
+                                    float[] res = getAnglePosition(cx, cy, rad, ang, cur.getFloatPolygon(), dimp);
                                     xpts[j] = res[0];
                                     ypts[j] = res[1];
                             }
@@ -603,6 +604,7 @@ public class GetCortex implements PlugIn
                             smoothcortex[i] = new FloatPolygon(xpts, ypts);
                         
                     }
+                    util.close(dimp);
                     createRois(smoothcortex, zpos);
 	}
 

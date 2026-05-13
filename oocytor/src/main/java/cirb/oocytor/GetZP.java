@@ -353,7 +353,7 @@ public class GetZP implements PlugIn
         ImagePlus dup = imp.duplicate();
         IJ.run(dup, "Gaussian Blur...", "sigma=2 stack");
 		IJ.run(dup, "8-bit", "");
-        IJ.run(dup, "Variance...", "radius=10 stack"); 
+        IJ.run(dup, "Variance...", "radius=5 stack"); 
         IJ.setAutoThreshold(dup, "Mean dark");
         Prefs.blackBackground = true;
         IJ.run(dup, "Convert to Mask", "method=Mean background=Dark calculate black");
@@ -364,7 +364,7 @@ public class GetZP implements PlugIn
         int[] deby = new int[nslices];
         int[] orig_size = new int[nslices];
         int[] zpos = new int[nslices];
-        int cropsize = 350;
+        int cropsize = 700;
         ImageStack cropstack = new ImageStack(cropsize, cropsize);
             
         // localize oocyte and copy to image to analyse
