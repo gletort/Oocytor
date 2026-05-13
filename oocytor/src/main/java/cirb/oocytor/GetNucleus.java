@@ -50,6 +50,11 @@ public class GetNucleus implements PlugIn
 {
 	private final ImageIcon icon = new ImageIcon( this.getClass().getResource("/oo_logo.png") );
 	private String model_file = "";
+	private String[] models = {"nucleus/mouse"};
+    private String custom_dir = ""; // if model custom is custom_model, path to it
+    private String model_name = "";
+
+    
 	private String dir = ""; // directory of images to process
 	private RoiManager rm;
 	private ImagePlus imp;
@@ -92,8 +97,11 @@ public class GetNucleus implements PlugIn
 		ImagePlus iconimg = new ImagePlus();
 		iconimg.setImage(icon.getImage());
 		gd.addImage(iconimg);
-              
-        gd.addFileField("model_file:", model_file);
+            
+		gd.addChoice( "Choose model:", models, models[0] );
+    	gd.addDirectoryField( "other_model_path:", custom_dir );
+	    
+        //gd.addFileField("model_file:", model_file);
         if ( !ask_directory )
         {
         	gd.addMessage( "Processing opened image. Close it to choose a directory instead" );
@@ -110,8 +118,9 @@ public class GetNucleus implements PlugIn
         visible = gd.getNextBoolean();
 		
         //save_position = gd.getNextBoolean();
-		model_file = gd.getNextString();
-        if ( ask_directory )
+        model_name = gd.getNextChoice();
+        custom_dir = gd.getNextString();
+		if ( ask_directory )
         	dir = gd.getNextString();	
         return true;
 	}
@@ -324,7 +333,29 @@ public class GetNucleus implements PlugIn
 		}
 		
 	}
-
+	
+	/** Get the path to the model local download or path */
+	public void getModel()
+	{
+		String model_path = "";
+		if ( model_name.equals("other_model") )
+		{
+			model_path = custom_dir;
+			return;
+		}
+		// from name to path
+		//model_path = model_name.replace("_", "/");
+		model_path = util.getModelDir( model_name );
+		if ( model_path == null )
+		{
+			IJ.error( "Problem to download/find local model." );
+		}
+		model_file = util.getModelFile( model_path, ".pt", "best.pt" );
+		if ( debug )
+			System.out.println( "Selected model file: "+model_file );
+	}
+	
+	
 
 	public void run( String arg )
 	{
@@ -334,8 +365,7 @@ public class GetNucleus implements PlugIn
 			ask_directory = true;
 		}
 		
-        model_file = ""; // see if keep in memory
-		// get parameters, initialize
+       // get parameters, initialize
 		if ( !getParameters() ) { return; }
 		//IJ.run("Close All");
 		rm = RoiManager.getInstance();
@@ -348,7 +378,10 @@ public class GetNucleus implements PlugIn
         {
              dir = dir + File.separator;
         }
-        if ( !model_file.endsWith(".pt") )
+		// Get the model (download if necessary) local path
+		getModel();
+	
+        if ( (model_file == null) || (!model_file.endsWith(".pt")) )
         {
         	IJ.error( "Selected model file is not of supported type. Should be a .pt file" );
         	return;

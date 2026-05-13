@@ -32,6 +32,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -1062,5 +1063,34 @@ public class Utils
 		}
 		return null;
 	  }
+	  
+	  /** From model path get the model file (.pt) */
+		public String getModelFile( String model_path, String ext, String favor )
+		{
+			File model_dir = new File( model_path );
+			// List all files ending with .pt
+	        List<File> ptFiles = Arrays.stream( model_dir.listFiles() )
+	                .filter( file -> file.isFile() && file.getName().endsWith( ext ) )
+	                .collect( Collectors.toList() );
+
+	        if ( ptFiles.isEmpty() ) 
+	        {
+	            System.out.println("No .pt files found in: " + model_path);
+	            return null;
+	        }
+
+	        if ( favor != null )
+	        {
+		        Optional<File> bestFile = ptFiles.stream()
+		                .filter(file -> file.getName().equals( favor ))
+		                .findFirst();
+		        if ( !bestFile.isEmpty() )
+		        {
+		        	return bestFile.get().getAbsolutePath();
+		        }
+	        }
+	        return ptFiles.get(0).getAbsolutePath();
+		}
+
       
 }
