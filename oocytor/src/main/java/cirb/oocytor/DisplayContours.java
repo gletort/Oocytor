@@ -8,6 +8,7 @@ import java.io.IOException;
 import fiji.util.gui.GenericDialogPlus;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.gui.PointRoi;
 import ij.gui.Roi;
 import ij.measure.ResultsTable;
 import ij.plugin.PlugIn;
@@ -50,6 +51,7 @@ public class DisplayContours implements PlugIn
 	public void openResetImage( String imgname ) 
 	{
 		imp = IJ.openImage(imgname);
+		imp.show();
 		rm.runCommand(imp, "Deselect");
 		
 	}
@@ -79,33 +81,34 @@ public class DisplayContours implements PlugIn
 	    
 	    if ( show_nucleus )
 	    {
-	    	  String nucposFile = contours_dir + rootname + "_nucpos.csv";
-	          
+	    	 File nucFile = new File( contours_dir + rootname+ "_nucleusPosition.csv" );
+		    if ( nucFile.exists() )
+		    {
 	          ResultsTable rt;
 	          try {
-	              rt = ResultsTable.open( nucposFile );
+	              rt = ResultsTable.open( nucFile.getAbsolutePath() );
 	          } catch (IOException e) {
 	              IJ.error("Load NucPos ROIs",
-	                       "Could not open file:\n" + nucposFile + "\n" + e.getMessage());
+	                       "Could not open file:\n" + nucFile.getAbsolutePath() + "\n" + e.getMessage());
 	              return;
 	          }
 	        
 	          for (int i = 0; i < rt.getCounter(); i++) 
 	          {
 
-	              int slice = (int) rt.getValue("T",      i);
+	              int slice = (int) rt.getValue("Frame",      i);
 	              int x     = (int) rt.getValue("X",      i);
 	              int y     = (int) rt.getValue("Y",      i);
-	              int w     = (int) rt.getValue("Width",  i);
-	              int h     = (int) rt.getValue("Height", i);
-
+	              
 	              imp.setSlice(slice);
-	              Roi roi = new Roi(x, y, w, h);
+	              PointRoi roi = new PointRoi(x, y);
 	              roi.setPosition(slice);
+	              roi.setSize(4);
 	              imp.setRoi(roi);
 	              roi.setImage(imp);
 	              rm.addRoi(roi);
 	          }
+		    }
 	    }
 	        
 	        rm.runCommand("Associate", "true");
