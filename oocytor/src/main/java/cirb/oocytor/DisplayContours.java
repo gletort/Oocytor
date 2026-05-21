@@ -81,7 +81,7 @@ public class DisplayContours implements PlugIn
 	    
 	    if ( show_nucleus )
 	    {
-	    	 File nucFile = new File( contours_dir + rootname+ "_nucleusPosition.csv" );
+	    	File nucFile = new File( contours_dir + rootname+ "_nucleusPosition.csv" );
 		    if ( nucFile.exists() )
 		    {
 	          ResultsTable rt;
