@@ -810,64 +810,87 @@ public class MeasureFeatures implements PlugIn
 	public void measureNucleusPosition()
 	{
 		// initialize everything
-		openImageRois(true, false, -1, true);	
+		openImageRois(true, false, -1, false);	
 		int nrois = rm.getCount();
 		ResultsTable myrt = new ResultsTable();
         myrt.setPrecision​(precision);
         
         // Open nucleus position file
 		ResultsTable nucrt = openNucleusPosition();
-        
-		// calculate relative position in each slice
-		for ( int i=0; i < nrois; i++ )
+		// No nucleus found
+		if ( nucrt.getCounter() <= 0 )
 		{
-			// Get current frame
-             Roi cur = rm.getRoi(i);
-             int cur_slice = cur.getPosition();
-             myrt.incrementCounter();
-             myrt.addValue("Time", timeoff+(cur_slice-1)*dtime);
-             
-             int slice = (int) nucrt.getValue( "Frame", i );
-             if ( slice != cur_slice )
-             {
-            	 IJ.error( "Missing a frame in cortex or nucleus position \n Skipped analysis of frame "+i );
-            	 myrt.addValue( "NucleusDistanceToCenter", null );
-            	 myrt.addValue( "NucleusDistanceToCenterNormalized", null );
-            	 myrt.addValue( "NucleusDistanceToEdge", null );
-            	 myrt.addValue( "NucleusDistanceToEdgeNormalized", null );
-            	 myrt.addResults();
-            	 continue;
-             }
+			myrt.addValue( "NucleusDistanceToCenter", null );
+       	 	myrt.addValue( "NucleusDistanceToCenterNormalized", null );
+       	 	myrt.addValue( "NucleusDistanceToEdge", null );
+       	 	myrt.addValue( "NucleusDistanceToEdgeNormalized", null );
+       	    myrt.addResults();
             
-             if ( !nucrt.getStringValue( "X", i ).equals( "NA" ) )
-             {
-            	 double[] nuccenter = new double[] {0,0};
-            	 nuccenter[0] = (double) nucrt.getValue("X", i);
-            	 nuccenter[1] = (double) nucrt.getValue("Y", i);
+		}
+		else
+		{
+		
+			int shift = -1;
+			// calculate relative position in each slice
+			for ( int i=0; i < nrois; i++ )
+			{
+				// Get current frame
+				Roi cur = rm.getRoi(i);
+				int cur_slice = cur.getPosition();
+				// if first index, check if starts at 0 or not
+				if ( i==0 )
+				{
+					shift = cur_slice==0?1:0;
+				}
+				cur_slice = cur_slice + shift;
+				//System.out.println("slice "+cur_slice);
+				myrt.incrementCounter();
+				myrt.addValue("Time", timeoff+(cur_slice-1)*dtime);
+             
+				int slice = (int) nucrt.getValue( "Frame", i );
+
+				//System.out.println("frame "+slice);
+				if ( slice != cur_slice )
+				{
+					//IJ.log( "Warning: Missing frame "+i+" in cortex or nucleus position" );
+					myrt.addValue( "NucleusDistanceToCenter", null );
+					myrt.addValue( "NucleusDistanceToCenterNormalized", null );
+					myrt.addValue( "NucleusDistanceToEdge", null );
+					myrt.addValue( "NucleusDistanceToEdgeNormalized", null );
+					myrt.addResults();
+					continue;
+				}
+            
+				if ( !nucrt.getStringValue( "X", i ).equals( "NA" ) )
+				{
+					double[] nuccenter = new double[] {0,0};
+					nuccenter[0] = (double) nucrt.getValue("X", i);
+					nuccenter[1] = (double) nucrt.getValue("Y", i);
             	 
-            	 // Distance to center
-            	 double[] cent = cur.getContourCentroid();
-            	 double distance = util.distance( cent, nuccenter );
-            	 myrt.addValue( "NucleusDistanceToCenter", distance*scalexy );
-            	 // Normed distance and edge point
-            	 double[] edge = util.getLocalEdge( cur, cent, nuccenter );
-            	 myrt.addValue( "NucleusDistanceToCenterNormalized", edge[0] );
-            	 // Distance to local edge
-            	 double[] pt_edge = new double[] {edge[1], edge[2]};
-            	 distance = util.distance( pt_edge, nuccenter );
-            	 myrt.addValue( "NucleusDistanceToEdge", distance*scalexy );
-              	 myrt.addValue( "NucleusDistanceToEdgeNormalized", distance/edge[3] );         	  	  
-             }
-             else
-             {
-            	 myrt.addValue( "NucleusDistanceToCenter", null );
-            	 myrt.addValue( "NucleusDistanceToCenterNormalized", null );
-            	 myrt.addValue( "NucleusDistanceToEdge", null );
-            	 myrt.addValue( "NucleusDistanceToEdgeNormalized", null );
-             }
-         
-           myrt.addResults();
-        }
+					// Distance to center
+					double[] cent = cur.getContourCentroid();
+					double distance = util.distance( cent, nuccenter );
+					myrt.addValue( "NucleusDistanceToCenter", distance*scalexy );
+					// Normed distance and edge point
+					double[] edge = util.getLocalEdge( cur, cent, nuccenter );
+					myrt.addValue( "NucleusDistanceToCenterNormalized", edge[0] );
+					// Distance to local edge
+					double[] pt_edge = new double[] {edge[1], edge[2]};
+					distance = util.distance( pt_edge, nuccenter );
+					myrt.addValue( "NucleusDistanceToEdge", distance*scalexy );
+					myrt.addValue( "NucleusDistanceToEdgeNormalized", distance/edge[3] );         	  	  
+				}
+				else
+				{
+					myrt.addValue( "NucleusDistanceToCenter", null );
+					myrt.addValue( "NucleusDistanceToCenterNormalized", null );
+					myrt.addValue( "NucleusDistanceToEdge", null );
+					myrt.addValue( "NucleusDistanceToEdgeNormalized", null );
+				}
+			
+				myrt.addResults();
+			}
+		}
 		myrt.save(resdir+File.separator+purname+"_nucleusRelativePosition.csv");
         imp.changes = false;
 		imp.close();

@@ -2,8 +2,10 @@
 // author: Gaëlle Letort, Terret/Verlhac team, CIRB, Collège de France
 
 drawCortex = 1; // put to 0 not to draw it
-drawZP = 0;     // put to 0 not to draw it
-slice = -1;     // slice on which to draw. Put -1 to draw on all slices
+drawZP = 1;     // put to 0 not to draw it
+drawNucleus = 1;
+
+slice = 1;     // slice on which to draw. Put -1 to draw on all slices
 saveImg = 1;    // save the resulting image or stack in a new folder
 
 doFolder = 1;  // put to 0 to do only one file, 1 to process a whole folder
@@ -44,6 +46,7 @@ function drawOneFile(filename)
 	nzp = 0;
 	doCortex = drawCortex;
 	doZP = drawZP;
+	doNucleus = drawNucleus;
 	if (drawCortex>0) { 
 		cortpath = path+"contours"+File.separator()+rootname+"_UnetCortex.zip";
 		if (! File.exists(cortpath) ) { 
@@ -61,6 +64,20 @@ function drawOneFile(filename)
 			doZP = 0;
 		} else {
 		roiManager("Open", zppath);
+		}
+	}
+	if (drawNucleus>0)
+	{
+		run("Clear Results");
+		nucpos_file =  path+"contours"+File.separator()+rootname+"_nucleusPosition.csv";
+		if (!File.exists(nucpos_file))
+		{
+			doNucleus = 0;
+		}
+		else 
+		{
+			open( nucpos_file );
+			Table.rename(rootname+"_nucleusPosition.csv", "Results");
 		}
 	}
 
@@ -90,6 +107,23 @@ function drawOneFile(filename)
 			setForegroundColor(180, 80, 255);  // Cortex color in RGB
 			run("Draw", "slice");
 			roiManager("Deselect");
+		}
+		
+		if ((drawNucleus>0) & (doNucleus>0) )
+		{
+			for ( j=0; j<nResults; j++)
+			{
+				frame = getResult("Frame", j);
+				//print(frame);
+				//print(i);
+				if (frame==i)
+				{
+					setForegroundColor(100, 100, 255);  // Nucleus color in RGB
+					makeOval( getResult("X", j), getResult("Y", j), 20, 20 );
+					//print("drawing");
+					run("Fill", "slice");
+				}
+			}
 		}
 	}
 	roiManager("Show None");
