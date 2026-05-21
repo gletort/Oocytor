@@ -875,7 +875,6 @@ public class MeasureFeatures implements PlugIn
 	
 	public ResultsTable openNucleusPosition()
 	{
-		String imgname = dir+inname;
 		String purname = inname.substring(0, inname.lastIndexOf('.'));
 		
 		File nucFile = new File(dir+"contours"+File.separator+purname+"_nucleusPosition.csv");
