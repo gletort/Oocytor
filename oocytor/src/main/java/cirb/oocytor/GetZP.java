@@ -57,7 +57,7 @@ public class GetZP implements PlugIn
 	String contours = "Both"; // "Both", "Outer only", "Inner only"
 	private String[] models = {"zp/mouse", "zp/human", "other_model"};
 	private String custom_dir = ""; // if model custom is other_mmodel, path to it
-	private int nfeatures = 16; // nb features of the input model
+	private int nfeatures = 24; // nb features of the input model
 	private boolean ask_directory = false; // working on opened image or on a directory
 	private boolean debug = false; // add debug prints
 	private boolean save_rois = true; // save rois to zip file
@@ -576,8 +576,9 @@ public class GetZP implements PlugIn
 		{
 			IJ.error( "Problem to download/find local model." );
 		}
-		if ( model_name.equals("zp/human") )
-			nfeatures = 24;
+		// model trained with mouse data was with nfeat=16; others trained later are 24
+		if ( model_name.equals("zp/mouse") )
+			nfeatures = 16;
 	}
   
 
