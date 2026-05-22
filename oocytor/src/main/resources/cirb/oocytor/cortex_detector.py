@@ -14,7 +14,7 @@ from keras.models import model_from_json
 
 def normalise(img):
     """ Normalize with the quantiles """
-    quantiles = np.quantile( img, [0.01, 0.998] )
+    quantiles = np.quantile( img, [0.001, 0.9998] )
     img = (img - quantiles[0] )/ (quantiles[1]-quantiles[0])
     img = np.clip( img, 0.0, 1.0 )
     return img
