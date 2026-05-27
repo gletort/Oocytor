@@ -18,6 +18,7 @@ import org.apposed.appose.Service.TaskStatus;
 
 import ij.IJ;
 import ij.ImagePlus;
+import ij.gui.WaitForUserDialog;
 import ij.plugin.ImageCalculator;
 import net.imagej.ImgPlus;
 import net.imglib2.appose.NDArrays;
@@ -182,8 +183,9 @@ public class RunUNet
         	ImagePlus bin = process( resized, model_path.toString(), nfeat, debug );
 
         	if ( i >= 1) calc.run("add 32-bit stack", res, bin);
-             else res = (ImagePlus) (bin.duplicate());
+            else res = (ImagePlus) (bin.duplicate());
               //res.show();
+              //new WaitForUserDialog("test").show();
               bin.changes=false;
               bin.close();
         }
@@ -191,8 +193,10 @@ public class RunUNet
         resized.close();
         IJ.run(res, "Divide...", "value="+networks.size()+" stack");
         res.resetDisplayRange();
+       // res.show();
+        //new WaitForUserDialog("test").show();
         IJ.run(res, "8-bit", "");
-       // new WaitForUserDialog("test").show();
+        
         return res;
     }
 	

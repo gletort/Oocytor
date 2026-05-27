@@ -611,9 +611,10 @@ public class GetCortex implements PlugIn
 
 	/** \brief Treat one image: find cortex and save it as Rois 
 	 *
-	 * @param inname image file name
+	 * param inname image file name
+	 * param with_unet segment with unet else use a mask
 	 * */
-	public void getCortexImage(String inname)
+	public void getCortexImage( String inname, boolean with_unet )
 	{
 		IJ.log("Doing "+dir+inname);
 		if ( ask_directory )
@@ -631,8 +632,18 @@ public class GetCortex implements PlugIn
                 }
                 else 
                 {
-                    RunUNet runet = new RunUNet("cortex_detector.py");
-                	ImagePlus unet = runet.runUnet( imp, model_path, 8, visible, debug );
+                	ImagePlus unet = null;
+                	if ( with_unet )
+                	{
+                		RunUNet runet = new RunUNet("cortex_detector.py");
+                		unet = runet.runUnet( imp, model_path, 8, visible, debug );
+                	}
+                	else
+                	{
+                		String purinname = inname.substring(0, inname.lastIndexOf('.'));
+                		String maskname = dir+"masks"+File.separator+purinname+"_Cortex.png";
+                		unet = IJ.openImage( maskname );
+                	}
                     if ( visible ) unet.show();
                     // extract contours from the binary image
                     getCortexFromUnet(unet);
@@ -732,7 +743,7 @@ public class GetCortex implements PlugIn
         				String extension = inname.substring(j);
         				if ( extension.equals(".tif") | extension.equals(".TIF") | extension.equals(".png") | extension.equals(".jpg") | extension.equals(".JPG") )
         				{
-        					getCortexImage( inname );
+        					getCortexImage( inname, arg.equals("cortex") );
         				}                       
         			}
         			System.gc(); // garbage collector
@@ -742,7 +753,7 @@ public class GetCortex implements PlugIn
         else
         {
         	String inname = imp.getTitle();
-        	getCortexImage( inname );
+        	getCortexImage( inname, arg.equals("cortex") );
         }
 
 	}
