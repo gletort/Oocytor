@@ -820,6 +820,7 @@ public class MeasureFeatures implements PlugIn
 		// No nucleus found
 		if ( nucrt.getCounter() <= 0 )
 		{
+			myrt.addValue("Time", timeoff);
 			myrt.addValue( "NucleusDistanceToCenter", null );
        	 	myrt.addValue( "NucleusDistanceToCenterNormalized", null );
        	 	myrt.addValue( "NucleusDistanceToEdge", null );
