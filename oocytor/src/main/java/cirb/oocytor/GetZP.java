@@ -190,7 +190,7 @@ public class GetZP implements PlugIn
 	{
 		IJ.run(img, "Select None", "");
 		IJ.setRawThreshold(img, 1, 255, null);
-		IJ.run(img, "Analyze Particles...", "size=0-500 clear add");
+		IJ.run(img, "Analyze Particles...", "size=0-1000 clear add");
 		for (int i = 0; i < rm.getCount(); i++) 
 		{
 			Roi cur = rm.getRoi(i);
