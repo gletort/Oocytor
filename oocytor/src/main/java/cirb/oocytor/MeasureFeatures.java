@@ -638,7 +638,7 @@ public class MeasureFeatures implements PlugIn
 		openImageRois( true, true, -1, false);
 		
 		ResultsTable myrt = new ResultsTable();
-                myrt.setPrecision​(precision);
+        myrt.setPrecision​(precision);
 		
 		for ( int i=0; i < rm.getCount(); i++ )
 		{
@@ -820,7 +820,7 @@ public class MeasureFeatures implements PlugIn
 		// No nucleus found
 		if ( nucrt.getCounter() <= 0 )
 		{
-			myrt.addValue("Time", timeoff);
+			myrt.addValue("Time", timeoff-1*dtime);
 			myrt.addValue( "NucleusDistanceToCenter", null );
        	 	myrt.addValue( "NucleusDistanceToCenterNormalized", null );
        	 	myrt.addValue( "NucleusDistanceToEdge", null );
@@ -838,12 +838,14 @@ public class MeasureFeatures implements PlugIn
 				// Get current frame
 				Roi cur = rm.getRoi(i);
 				int cur_slice = cur.getPosition();
-				// if first index, check if starts at 0 or not
+				/**
+				 * // if first index, check if starts at 0 or not
 				if ( i==0 )
 				{
 					shift = cur_slice==0?1:0;
 				}
 				cur_slice = cur_slice + shift;
+				*/
 				//System.out.println("slice "+cur_slice);
 				myrt.incrementCounter();
 				myrt.addValue("Time", timeoff+(cur_slice-1)*dtime);
