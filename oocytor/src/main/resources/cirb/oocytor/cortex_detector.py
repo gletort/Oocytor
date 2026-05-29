@@ -19,7 +19,7 @@ def normalise(img):
     img = (img - quantiles[0] )/ (quantiles[1]-quantiles[0])
     img = np.clip( img, 0.0, 1.0 )
     if standardize:
-		img = (img - img.mean()) / img.std()
+         img = (img - img.mean()) / img.std()
     return img
 
 def jaccard_distance(y_true, y_pred, smooth=100):
