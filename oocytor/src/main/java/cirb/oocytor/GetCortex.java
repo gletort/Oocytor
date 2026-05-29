@@ -66,7 +66,8 @@ public class GetCortex implements PlugIn
     final ImageIcon icon = new ImageIcon(this.getClass().getResource("/oo_logo.png"));
     private String[] models = {"cortex/mouse", "cortex/general", "other_model"};
     private String custom_dir = ""; // if model custom is custom_model, path to it
-
+    private boolean standardize = false; // standardize image before cnn for some models
+    
 
 	/** \brief Dialog window 
 	  @return true if no pb, false else
@@ -101,7 +102,7 @@ public class GetCortex implements PlugIn
                 
         gd.addChoice( "Choose model:", models, models[0] );
     	gd.addDirectoryField( "other_model_path:", custom_dir );
-	    
+	    gd.addCheckbox( "standardize", standardize );
 		//gd.addDirectoryField("model_path:", modeldir);
         if ( !ask_directory )
         {
@@ -127,6 +128,7 @@ public class GetCortex implements PlugIn
                 
          model_name = gd.getNextChoice();
          custom_dir = gd.getNextString();
+ 		standardize = gd.getNextBoolean();
          //modeldir = gd.getNextString();
          if ( ask_directory )
         	 dir = gd.getNextString();	
@@ -379,7 +381,7 @@ public class GetCortex implements PlugIn
             ImagePlus impcrop = new ImagePlus("cropped", cropstack);               
             //ImagePlus unet = net.runUnet(impcrop, dir+inname, nnet, modeldir, 800, visible);
             RunUNet runet = new RunUNet( "cortex_detector.py" );
-            ImagePlus unet = runet.runUnet( impcrop, model_path, 8, visible, debug );
+            ImagePlus unet = runet.runUnet( impcrop, model_path, 8, standardize, visible, debug );
             if ( visible ) unet.show();
                 
             IJ.showStatus("Binary to Rois...");
@@ -478,7 +480,7 @@ public class GetCortex implements PlugIn
                             
             //ImagePlus unet = net.runUnet(impcrop, dir+inname, nnet, modeldir, 800, visible);
             RunUNet runet = new RunUNet( "cortex_detector.py" );
-            ImagePlus unet = runet.runUnet( impcrop, model_path, 8, visible, debug );
+            ImagePlus unet = runet.runUnet( impcrop, model_path, 8, standardize, visible, debug );
             if ( visible ) unet.show();
                 
             IJ.showStatus("Binary to Rois...");
@@ -636,7 +638,7 @@ public class GetCortex implements PlugIn
                 	if ( with_unet )
                 	{
                 		RunUNet runet = new RunUNet("cortex_detector.py");
-                		unet = runet.runUnet( imp, model_path, 8, visible, debug );
+                		unet = runet.runUnet( imp, model_path, 8, standardize, visible, debug );
                 	}
                 	else
                 	{

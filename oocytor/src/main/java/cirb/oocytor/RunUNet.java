@@ -41,7 +41,7 @@ public class RunUNet
 	/**
 	 * Prepare the python environment and initialize nnInteractive to the active image
 	 */
-	public < T extends RealType< T > & NativeType< T > > ImagePlus process( ImagePlus resized, String model_path, int nfeat, boolean debug )
+	public < T extends RealType< T > & NativeType< T > > ImagePlus process( ImagePlus resized, String model_path, int nfeat, boolean standardize, boolean debug )
 	{
 		
 		final ImgPlus< T > img = ImagePlusAdapter.wrapImgPlus( resized );
@@ -53,6 +53,7 @@ public class RunUNet
 		inputs.put( "model_size", 256 );
 		inputs.put( "batch_size", 30 );
 		inputs.put( "nfeatures", nfeat );
+		inputs.put( "standardize", standardize );
 		inputs.put( "debug", debug ); // to catch more messages
 		
 		IJ.log( "Downloading/Installing the environment if necessary..." );
@@ -154,7 +155,7 @@ public class RunUNet
 	    }
 	
     /** \brief run all the networks, and take the average result */
-    public ImagePlus runUnet(ImagePlus imp, String model_dir, int nfeat, boolean show, boolean debug )
+    public ImagePlus runUnet(ImagePlus imp, String model_dir, int nfeat, boolean standardize, boolean show, boolean debug )
     {
     	// resize the image to the network training size
 	    IJ.run(imp, "Select None", "");
@@ -180,7 +181,7 @@ public class RunUNet
         {
         	IJ.showProgress( i, networks.size() );
         	Path model_path = (networks.get(i)).toAbsolutePath();
-        	ImagePlus bin = process( resized, model_path.toString(), nfeat, debug );
+        	ImagePlus bin = process( resized, model_path.toString(), nfeat, standardize, debug );
 
         	if ( i >= 1) calc.run("add 32-bit stack", res, bin);
             else res = (ImagePlus) (bin.duplicate());

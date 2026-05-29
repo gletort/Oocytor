@@ -61,6 +61,7 @@ public class GetZP implements PlugIn
 	private boolean ask_directory = false; // working on opened image or on a directory
 	private boolean debug = false; // add debug prints
 	private boolean save_rois = true; // save rois to zip file
+	private boolean standardize = false; // standardize imgs for some cnn
 
 	/** Initialisation of an image */
 	public void openResetImage(String imgname) 
@@ -425,7 +426,7 @@ public class GetZP implements PlugIn
         // Segment the cropped images
         ImagePlus impcrop = new ImagePlus("cropped", cropstack);               
         RunUNet runet = new RunUNet( "cortex_detector.py" );
-        ImagePlus unet = runet.runUnet( impcrop, model_path, nfeatures, visible, debug );
+        ImagePlus unet = runet.runUnet( impcrop, model_path, nfeatures, standardize, visible, debug );
        
         if ( visible ) unet.show();
                 
@@ -505,7 +506,7 @@ public class GetZP implements PlugIn
 			{
 				// run neural network for segmentation
 				RunUNet runet = new RunUNet( "cortex_detector.py" );
-				unet = runet.runUnet( imp, model_path, nfeatures, visible, debug );
+				unet = runet.runUnet( imp, model_path, nfeatures, standardize, visible, debug );
 			}
 			else
 			{
@@ -557,7 +558,9 @@ public class GetZP implements PlugIn
 
 		 gd.addChoice( "Choose model:", models, models[0] );
 		gd.addDirectoryField( "other_model_path:", custom_dir );
-			//gd.addDirectoryField("model_path:", modeldir);
+		gd.addCheckbox("standardize", standardize);
+        
+		//gd.addDirectoryField("model_path:", modeldir);
 	      if ( !ask_directory )
 	      {
 	           gd.addMessage( "Processing opened image. Close it if you wish to choose a directory instead" );
@@ -580,6 +583,7 @@ public class GetZP implements PlugIn
 		model_name = gd.getNextChoice();
 		custom_dir = gd.getNextString();
          //modeldir = gd.getNextString();
+		standardize = gd.getNextBoolean();
          if ( ask_directory )
         	 dir = gd.getNextString();	
          else
