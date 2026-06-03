@@ -838,21 +838,17 @@ public class MeasureFeatures implements PlugIn
 				// Get current frame
 				Roi cur = rm.getRoi(i);
 				int cur_slice = cur.getPosition();
-				/**
-				 * // if first index, check if starts at 0 or not
+				// if first index, check if starts at 0 or not
 				if ( i==0 )
 				{
 					shift = cur_slice==0?1:0;
 				}
-				cur_slice = cur_slice + shift;
-				*/
-				//System.out.println("slice "+cur_slice);
 				myrt.incrementCounter();
 				myrt.addValue("Time", timeoff+(cur_slice-1)*dtime);
+				cur_slice = cur_slice + shift;
              
 				int slice = (int) nucrt.getValue( "Frame", i );
 
-				//System.out.println("frame "+slice);
 				if ( slice != cur_slice )
 				{
 					//IJ.log( "Warning: Missing frame "+i+" in cortex or nucleus position" );
@@ -872,7 +868,7 @@ public class MeasureFeatures implements PlugIn
             	 
 					// Distance to center
 					double[] cent = cur.getContourCentroid();
-					double distance = util.distance( cent, nuccenter );
+										double distance = util.distance( cent, nuccenter );
 					myrt.addValue( "NucleusDistanceToCenter", distance*scalexy );
 					// Normed distance and edge point
 					double[] edge = util.getLocalEdge( cur, cent, nuccenter );

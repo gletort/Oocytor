@@ -598,11 +598,11 @@ public class Utils
 		int ycur = (int) ( pta[1] + radius*Math.sin(angle) );
 		while ( roi.contains(xcur, ycur) )
 		{
-			radius += 0.25;
+			radius += 0.1;
 			xcur = (int) ( pta[0] + radius*Math.cos(angle) );
 			ycur = (int) ( pta[1] + radius*Math.sin(angle) );
 		}
-		radius -= 0.25; // found cortex
+		radius -= 0.1; // found cortex
 		edge[0] = norm/radius;
 		edge[1] = (double) xcur;
 		edge[2] = (double) ycur;
