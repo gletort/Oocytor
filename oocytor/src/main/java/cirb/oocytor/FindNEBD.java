@@ -52,6 +52,7 @@ public class FindNEBD implements PlugIn
 	private String model_name = "";
 	private String model_path = "";
 	private boolean visible = true;
+	private boolean standardize = false;
    
         
         /** \brief Dialog window 
@@ -223,7 +224,7 @@ public class FindNEBD implements PlugIn
             // run neural network for segmentation
             //ImagePlus unet = net.runUnet(imp, dir+inname, nnet, modeldir, 250, true);
             RunUNet runet = new RunUNet( "nebd_detector.py" );
-            ImagePlus unet = runet.runUnet( imp, model_path, 32, visible, debug );
+            ImagePlus unet = runet.runUnet( imp, model_path, 32, standardize, visible, debug );
            
             
             // extract contours from the binary image, smooth a little

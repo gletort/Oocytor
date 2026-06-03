@@ -59,6 +59,7 @@ public class MeasureFeatures implements PlugIn
 	boolean piv = true;
 	boolean spatial = true;
 	boolean zpstruc = true;
+	boolean nucleus_position = true; // Measure relative nucleus poition (to the center, to the edge, normalised)
 	
 	// parameters
 	double scalexy = 0.5; // one pixel in um
@@ -100,7 +101,8 @@ public class MeasureFeatures implements PlugIn
 		gd.addCheckbox("get_piv", true);
 		gd.addCheckbox("spatial", true);
 		gd.addCheckbox("zp_structure", true);
-
+		gd.addCheckbox( "nucleus_position", nucleus_position );
+		
                 //gd.setBackground(new Color(75,75,91));
                 //gd.setForeground(new Color(255,255,255));
                 gd.setBackground(new Color(100,140,170));
@@ -128,6 +130,7 @@ public class MeasureFeatures implements PlugIn
 		piv = gd.getNextBoolean();
 		spatial = gd.getNextBoolean();
 		zpstruc = gd.getNextBoolean();
+		nucleus_position = gd.getNextBoolean();
 
                 dir = IJ.getDirectory("Choose images directory:");	
 		return true;
@@ -635,13 +638,13 @@ public class MeasureFeatures implements PlugIn
 		openImageRois( true, true, -1, false);
 		
 		ResultsTable myrt = new ResultsTable();
-                myrt.setPrecision​(precision);
+        myrt.setPrecision​(precision);
 		
 		for ( int i=0; i < rm.getCount(); i++ )
 		{
 			rm.select(i);
 			Roi cur = rm.getRoi(i);
-                        int slice = cur.getPosition();
+            int slice = cur.getPosition();
 			myrt.incrementCounter();
 			//myrt.addValue("Slice", slice);
 			myrt.addValue("Time", timeoff+(slice-1)*dtime);
@@ -802,6 +805,121 @@ public class MeasureFeatures implements PlugIn
 		myrt.addResults();
 		myrt.save(resdir+File.separator+purname+"_zpTubeFeatures.csv");
 	}
+	
+	/** \brief Nucleus position, absolute, relative and normalized */
+	public void measureNucleusPosition()
+	{
+		// initialize everything
+		openImageRois(true, false, -1, false);	
+		int nrois = rm.getCount();
+		ResultsTable myrt = new ResultsTable();
+        myrt.setPrecision​(precision);
+        
+        // Open nucleus position file
+		ResultsTable nucrt = openNucleusPosition();
+		// No nucleus found
+		if ( nucrt.getCounter() <= 0 )
+		{
+			myrt.addValue("Time", timeoff-1*dtime);
+			myrt.addValue( "NucleusDistanceToCenter", null );
+       	 	myrt.addValue( "NucleusDistanceToCenterNormalized", null );
+       	 	myrt.addValue( "NucleusDistanceToEdge", null );
+       	 	myrt.addValue( "NucleusDistanceToEdgeNormalized", null );
+       	    myrt.addResults();
+            
+		}
+		else
+		{
+		
+			int shift = -1;
+			// calculate relative position in each slice
+			for ( int i=0; i < nrois; i++ )
+			{
+				// Get current frame
+				Roi cur = rm.getRoi(i);
+				int cur_slice = cur.getPosition();
+				/**
+				 * // if first index, check if starts at 0 or not
+				if ( i==0 )
+				{
+					shift = cur_slice==0?1:0;
+				}
+				cur_slice = cur_slice + shift;
+				*/
+				//System.out.println("slice "+cur_slice);
+				myrt.incrementCounter();
+				myrt.addValue("Time", timeoff+(cur_slice-1)*dtime);
+             
+				int slice = (int) nucrt.getValue( "Frame", i );
+
+				//System.out.println("frame "+slice);
+				if ( slice != cur_slice )
+				{
+					//IJ.log( "Warning: Missing frame "+i+" in cortex or nucleus position" );
+					myrt.addValue( "NucleusDistanceToCenter", null );
+					myrt.addValue( "NucleusDistanceToCenterNormalized", null );
+					myrt.addValue( "NucleusDistanceToEdge", null );
+					myrt.addValue( "NucleusDistanceToEdgeNormalized", null );
+					myrt.addResults();
+					continue;
+				}
+            
+				if ( !nucrt.getStringValue( "X", i ).equals( "NA" ) )
+				{
+					double[] nuccenter = new double[] {0,0};
+					nuccenter[0] = (double) nucrt.getValue("X", i);
+					nuccenter[1] = (double) nucrt.getValue("Y", i);
+            	 
+					// Distance to center
+					double[] cent = cur.getContourCentroid();
+					double distance = util.distance( cent, nuccenter );
+					myrt.addValue( "NucleusDistanceToCenter", distance*scalexy );
+					// Normed distance and edge point
+					double[] edge = util.getLocalEdge( cur, cent, nuccenter );
+					myrt.addValue( "NucleusDistanceToCenterNormalized", edge[0] );
+					// Distance to local edge
+					double[] pt_edge = new double[] {edge[1], edge[2]};
+					distance = util.distance( pt_edge, nuccenter );
+					myrt.addValue( "NucleusDistanceToEdge", distance*scalexy );
+					myrt.addValue( "NucleusDistanceToEdgeNormalized", distance/edge[3] );         	  	  
+				}
+				else
+				{
+					myrt.addValue( "NucleusDistanceToCenter", null );
+					myrt.addValue( "NucleusDistanceToCenterNormalized", null );
+					myrt.addValue( "NucleusDistanceToEdge", null );
+					myrt.addValue( "NucleusDistanceToEdgeNormalized", null );
+				}
+			
+				myrt.addResults();
+			}
+		}
+		myrt.save(resdir+File.separator+purname+"_nucleusRelativePosition.csv");
+        imp.changes = false;
+		imp.close();
+	}
+	
+	public ResultsTable openNucleusPosition()
+	{
+		String purname = inname.substring(0, inname.lastIndexOf('.'));
+		
+		File nucFile = new File(dir+"contours"+File.separator+purname+"_nucleusPosition.csv");
+         
+		if ( nucFile.exists() )
+	    {
+          ResultsTable rt;
+          try {
+              rt = ResultsTable.open( nucFile.getAbsolutePath() );
+              return rt;
+          } catch (IOException e) {
+              IJ.error("Load Nucleus Position File",
+                       "Could not open file:\n" + nucFile.getAbsolutePath() + "\n" + e.getMessage());
+              return null;
+          }
+        
+       }
+		return null;
+	}
 
 	public void openImageRois(boolean openCortex,  boolean openErased, double fact, boolean getOut)
 	{
@@ -824,7 +942,7 @@ public class MeasureFeatures implements PlugIn
 		imp.show();
 		IJ.run(imp, "Select None", "");
 
-                purname = inname.substring(0, inname.lastIndexOf('.'));
+        purname = inname.substring(0, inname.lastIndexOf('.'));
 		//get outside Roi
 		if ( getOut )
                 {
@@ -838,7 +956,7 @@ public class MeasureFeatures implements PlugIn
                     }
                 }
                 
-                // rescale if needed
+        // rescale if needed
 		if ( fact > 0 )
 		{
 			// put all images to same size in microns for comparable texture 
@@ -866,20 +984,20 @@ public class MeasureFeatures implements PlugIn
 
 		if ( openCortex )
 		{
-                    rm.runCommand("Open", dir+"contours"+File.separator+purname+"_UnetCortex.zip");
-                    if ( fact > 0 )
-                            util.rescaleRois(rm,imp,fact);
-                }
+            rm.runCommand("Open", dir+"contours"+File.separator+purname+"_UnetCortex.zip");
+            if ( fact > 0 )
+               util.rescaleRois(rm,imp,fact);
+        }
 	}
         
         /** \brief Choose which measures to do according to selected cases in the dialog */
         public void measure()
         {
-                if ( oocyte )
-		{	
-			IJ.run("Close All");
-			measureOocyte();
-		}
+            if ( oocyte )
+            {	
+                IJ.run("Close All");
+                measureOocyte();
+            }
 		if ( zp )
 		{
 			IJ.run("Close All");
@@ -918,6 +1036,11 @@ public class MeasureFeatures implements PlugIn
 			IJ.run("Close All");
 			measureSpatialFeatures();
 		}
+		if ( nucleus_position )
+		{
+			IJ.run("Close All");
+			measureNucleusPosition();
+		}
 		if ( zpstruc )
 		{
 			IJ.run("Close All");
@@ -944,10 +1067,10 @@ public class MeasureFeatures implements PlugIn
 		File thedir = new File(dir); 
 		File[] fileList = thedir.listFiles(); 
 			
-                for (File fily : fileList) 
-                {
-                    if ( fily.isFile() )
-                    {
+        for (File fily : fileList) 
+        {
+              if ( fily.isFile() )
+              {
                         inname = fily.getName();
                         int j = inname.lastIndexOf('.');
                         if (j > 0)
@@ -959,9 +1082,9 @@ public class MeasureFeatures implements PlugIn
                             }
                         
                         }
-                    }
-                   System.gc(); // garbage collector
-                }
+              }
+          System.gc(); // garbage collector
+          }
 	}
                 
 		

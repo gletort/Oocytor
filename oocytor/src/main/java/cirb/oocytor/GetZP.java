@@ -53,14 +53,15 @@ public class GetZP implements PlugIn
 	final ImageIcon icon = new ImageIcon(this.getClass().getResource("/oo_logo.png"));
 	boolean visible = false;
 	boolean locate = false;   // Locate the location of the oocyte+zp structure, and run the network on cropped around it
-	int threshold = 100;      // threshold to locate oocyte
+	int threshold = 100; //100;      // threshold to locate oocyte
 	String contours = "Both"; // "Both", "Outer only", "Inner only"
 	private String[] models = {"zp/mouse", "zp/human", "other_model"};
 	private String custom_dir = ""; // if model custom is other_mmodel, path to it
-	private int nfeatures = 16; // nb features of the input model
+	private int nfeatures = 24; // nb features of the input model
 	private boolean ask_directory = false; // working on opened image or on a directory
 	private boolean debug = false; // add debug prints
 	private boolean save_rois = true; // save rois to zip file
+	private boolean standardize = false; // standardize imgs for some cnn
 
 	/** Initialisation of an image */
 	public void openResetImage(String imgname) 
@@ -167,8 +168,8 @@ public class GetZP implements PlugIn
 		return res;
 	}
 
-	/** \brief Remove small Rois from the binary image */
-	public void cleanSmallRois(ImagePlus img) {
+	/** \brief Keep only bigger ROI from the binary image */
+	public void keepBiggestRois(ImagePlus img) {
 		IJ.run(img, "Select None", "");
 		IJ.setRawThreshold(img, 1, 255, null);
 		IJ.run(img, "Analyze Particles...", "clear add");
@@ -183,13 +184,32 @@ public class GetZP implements PlugIn
 		rm.runCommand(img, "Deselect");
 		rm.reset();
 	}
+	
+
+	/** \brief Remove small Rois from the binary image */
+	public void cleanSmallRois(ImagePlus img) 
+	{
+		IJ.run(img, "Select None", "");
+		IJ.setRawThreshold(img, 1, 255, null);
+		IJ.run(img, "Analyze Particles...", "size=0-1000 clear add");
+		for (int i = 0; i < rm.getCount(); i++) 
+		{
+			Roi cur = rm.getRoi(i);
+			img.setSlice(cur.getPosition());
+			img.setRoi(cur);
+			IJ.run(img, "Clear", "slice");
+		}
+		IJ.run(img, "Select None", "");
+		rm.runCommand(img, "Deselect");
+		rm.reset();
+	}
 
 	/** \brief At each slice, calculate the iner and outer Rois from the binary image */
 	public void getRoisSlice(int slice, ImagePlus bin, double wratio, double hratio, float rad) {
 		imp.setSlice(slice);
 		bin.setSlice(slice);
 
-		int nang = 360;
+		int nang = 400;
 		double ang = 0;
 		double dang = 2 * Math.PI / nang;
 		float[] fxpts = new float[nang];
@@ -339,6 +359,8 @@ public class GetZP implements PlugIn
 			bin.hide();
 			//imp.hide();
 		}
+		//bin.show();
+	    //new WaitForUserDialog("test").show();
 		for (int i = 1; i <= imp.getNSlices(); i++) {
 			IJ.showStatus("Refine ZP Rois... " + i + "/" + imp.getNSlices());
 			getRoisSlice(i, bin, wratio, hratio, rad);
@@ -353,7 +375,7 @@ public class GetZP implements PlugIn
         ImagePlus dup = imp.duplicate();
         IJ.run(dup, "Gaussian Blur...", "sigma=2 stack");
 		IJ.run(dup, "8-bit", "");
-        IJ.run(dup, "Variance...", "radius=10 stack"); 
+        IJ.run(dup, "Variance...", "radius=5 stack"); 
         IJ.setAutoThreshold(dup, "Mean dark");
         Prefs.blackBackground = true;
         IJ.run(dup, "Convert to Mask", "method=Mean background=Dark calculate black");
@@ -364,7 +386,7 @@ public class GetZP implements PlugIn
         int[] deby = new int[nslices];
         int[] orig_size = new int[nslices];
         int[] zpos = new int[nslices];
-        int cropsize = 350;
+        int cropsize = 700;
         ImageStack cropstack = new ImageStack(cropsize, cropsize);
             
         // localize oocyte and copy to image to analyse
@@ -404,7 +426,7 @@ public class GetZP implements PlugIn
         // Segment the cropped images
         ImagePlus impcrop = new ImagePlus("cropped", cropstack);               
         RunUNet runet = new RunUNet( "cortex_detector.py" );
-        ImagePlus unet = runet.runUnet( impcrop, model_path, nfeatures, visible, debug );
+        ImagePlus unet = runet.runUnet( impcrop, model_path, nfeatures, standardize, visible, debug );
        
         if ( visible ) unet.show();
                 
@@ -462,7 +484,7 @@ public class GetZP implements PlugIn
         
 
 	/** Get ZP contours: run the neural networks and refine the detection */
-	public void getZP(String inname) 
+	public void getZP( String inname, boolean with_unet ) 
 	{
 		IJ.log("Doing " + dir + inname);
 		if (ask_directory) IJ.run("Close All", "");
@@ -480,9 +502,18 @@ public class GetZP implements PlugIn
         }
 		else
 		{
-			// run neural network for segmentation
-			RunUNet runet = new RunUNet( "cortex_detector.py" );
-		    unet = runet.runUnet( imp, model_path, nfeatures, visible, debug );
+			if ( with_unet )
+			{
+				// run neural network for segmentation
+				RunUNet runet = new RunUNet( "cortex_detector.py" );
+				unet = runet.runUnet( imp, model_path, nfeatures, standardize, visible, debug );
+			}
+			else
+			{
+				String purinname = inname.substring(0, inname.lastIndexOf('.'));
+        		String maskname = dir+"masks"+File.separator+purinname+"_ZP.png";
+        		unet = IJ.openImage( maskname );
+			}
 		}
 		// extract contours from the binary image, smooth a little
 		IJ.showStatus("Refine ZP Rois...");
@@ -517,7 +548,9 @@ public class GetZP implements PlugIn
 		gd.addChoice( "ZP contours:", new String[] { "Both", "Outer only", "Inner only" }, "Both");
 		gd.addCheckbox("visible_mode", visible);
         gd.addCheckbox("locate", locate);
-		gd.setBackground(new Color(100, 140, 170));
+        //gd.addNumericField( "threshold", threshold );    
+		
+        gd.setBackground(new Color(100, 140, 170));
 		gd.setInsets​(-100, 240, 0);
 		ImagePlus iconimg = new ImagePlus();
 		iconimg.setImage(icon.getImage());
@@ -525,8 +558,9 @@ public class GetZP implements PlugIn
 
 		 gd.addChoice( "Choose model:", models, models[0] );
 		gd.addDirectoryField( "other_model_path:", custom_dir );
-		    
-			//gd.addDirectoryField("model_path:", modeldir);
+		gd.addCheckbox("standardize", standardize);
+        
+		//gd.addDirectoryField("model_path:", modeldir);
 	      if ( !ask_directory )
 	      {
 	           gd.addMessage( "Processing opened image. Close it if you wish to choose a directory instead" );
@@ -545,9 +579,11 @@ public class GetZP implements PlugIn
 		contours = gd.getNextChoice();
 		visible = gd.getNextBoolean();
 		locate = gd.getNextBoolean();
+		//threshold = (int) gd.getNextNumber();
 		model_name = gd.getNextChoice();
 		custom_dir = gd.getNextString();
          //modeldir = gd.getNextString();
+		standardize = gd.getNextBoolean();
          if ( ask_directory )
         	 dir = gd.getNextString();	
          else
@@ -576,8 +612,9 @@ public class GetZP implements PlugIn
 		{
 			IJ.error( "Problem to download/find local model." );
 		}
-		if ( model_name.equals("zp/human") )
-			nfeatures = 24;
+		// model trained with mouse data was with nfeat=16; others trained later are 24
+		if ( model_name.equals("zp/mouse") )
+			nfeatures = 16;
 	}
   
 
@@ -632,7 +669,7 @@ public class GetZP implements PlugIn
 				if (j > 0) {
 					String extension = inname.substring(j);
 					if (extension.equals(".tif") | extension.equals(".TIF") | extension.equals(".png") | extension.equals(".jpg") | extension.equals(".JPG")) {
-						getZP(inname);
+						getZP(inname, arg.equals("zp"));
 					}
 					System.gc(); // garbage collector
 				}
@@ -642,7 +679,7 @@ public class GetZP implements PlugIn
 		else
 		{
 			String inname = imp.getTitle();
-        	getZP( inname );
+        	getZP( inname, arg.equals("zp") );
 		}
 		
 	}

@@ -14,9 +14,12 @@ from keras.models import model_from_json
 
 def normalise(img):
     """ Normalize with the quantiles """
-    quantiles = np.quantile( img, [0.01, 0.998] )
+    img = np.float32(img) ## be sure it's float
+    quantiles = np.quantile( img, [0.001, 0.9998] )
     img = (img - quantiles[0] )/ (quantiles[1]-quantiles[0])
     img = np.clip( img, 0.0, 1.0 )
+    if standardize:
+         img = (img - img.mean()) / img.std()
     return img
 
 def jaccard_distance(y_true, y_pred, smooth=100):
@@ -108,8 +111,9 @@ if debug:
 images = np.array([normalise(i) for i in img]).reshape(-1, model_size, model_size, 1)
 if debug:
     task.update( f"Building model {model_path} and load weights" )
-model = build_unet( model_size, nfeatures )
-model.load_weights( model_path+"/variables/variables" )
+#model = build_unet( model_size, nfeatures )
+#model.load_weights( model_path+"/variables/variables" )
+model = tf.keras.models.load_model( model_path, custom_objects={"jaccard_distance":jaccard_distance, "mean_iou":mean_iou}  )
 
 if debug:
     task.update( f"Do prediction" )

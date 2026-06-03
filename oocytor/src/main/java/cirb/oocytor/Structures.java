@@ -89,7 +89,7 @@ public class Structures
                 myrt.addValue("OoParticleDistanceCoefVar", std/dmean);
 	}
 	
-        /** \brief Return the distance to center of the point (x,y) normalised by the radius of the Roi in the same radius */
+    /** \brief Return the distance to center of the point (x,y) normalised by the radius of the Roi in the same radius */
 	public double getNormedDistance( double[] cent, Roi roi, Roi only, int x, int y )
 	{
 		double dx = (double) x - cent[0];

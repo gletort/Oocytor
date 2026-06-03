@@ -543,11 +543,75 @@ public class Utils
             return res;
         }
         
-        /** \brief distance between to float polygon points at index i and j */
+     /** \brief distance between to float polygon points at index i and j */
 	public double distanceBetweenPolPoints( int i, FloatPolygon fpi, int j, FloatPolygon fpj)
 	{
 		return Math.sqrt( Math.pow(fpi.xpoints[i]-fpj.xpoints[j],2) + Math.pow(fpi.ypoints[i]-fpj.ypoints[j],2) );
 	}
+	
+	 /** \brief distance between to points in pixels */
+	public double distance( double[] pta, double[] ptb )
+	{
+			return Math.sqrt( Math.pow(pta[0]-ptb[0],2) + Math.pow(pta[1]-ptb[1],2) );
+	}
+	
+	/** \brief Return the distance from pointa to pointb (x,y) normalised by the radius of the Roi in the same direction */
+	public double getNormedDistance( Roi roi, double[] pta, double[] ptb )
+	{
+		double dx = (double) ptb[0] - pta[0];
+		double dy = (double) ptb[1] - pta[1];
+		double norm = Math.sqrt( dx*dx + dy*dy );
+		dx /= norm;
+		dy /= norm;
+		double angle = Math.atan2( dy, dx );
+		
+		// find local radius	
+		double radius = norm;
+		int xcur = (int) ( pta[0] + radius*Math.cos(angle) );
+		int ycur = (int) ( pta[1] + radius*Math.sin(angle) );
+		while ( roi.contains(xcur, ycur) )
+		{
+			radius += 0.25;
+			xcur = (int) ( pta[0] + radius*Math.cos(angle) );
+			ycur = (int) ( pta[1] + radius*Math.sin(angle) );
+		}
+		radius -= 0.25; // found cortex
+
+		//System.out.println(dist+" "+norm+" "+radius);
+		return (norm/radius);
+	}
+
+	/** \brief Return the edge point and normed distance of the Roi in the direction of the ptb */
+	public double[] getLocalEdge( Roi roi, double[] pta, double[] ptb )
+	{
+		double[] edge = new double[] {0,0,0,0};
+		double dx = (double) ptb[0] - pta[0];
+		double dy = (double) ptb[1] - pta[1];
+		double norm = Math.sqrt( dx*dx + dy*dy );
+		dx /= norm;
+		dy /= norm;
+		double angle = Math.atan2( dy, dx );
+		
+		// find local radius	
+		double radius = norm;
+		int xcur = (int) ( pta[0] + radius*Math.cos(angle) );
+		int ycur = (int) ( pta[1] + radius*Math.sin(angle) );
+		while ( roi.contains(xcur, ycur) )
+		{
+			radius += 0.25;
+			xcur = (int) ( pta[0] + radius*Math.cos(angle) );
+			ycur = (int) ( pta[1] + radius*Math.sin(angle) );
+		}
+		radius -= 0.25; // found cortex
+		edge[0] = norm/radius;
+		edge[1] = (double) xcur;
+		edge[2] = (double) ycur;
+		edge[3] = radius;
+		
+		//System.out.println(dist+" "+norm+" "+radius);
+		return edge;
+	}
+
 	
         /** \brief For an angle a, find the closest angle in the angs array */
 	public int findClosestAngle( double a, double[] angs )
