@@ -6,4 +6,10 @@ models/cortex/oocyte0/
 models/cortex/init/oocyte0/
 models/test/
 models/nebd/mouse.zip
+models/cortex/general/
+models/cortex/mouse/
+models/nucleus/mouse/
+models/zp/human/
+models/zp/mouse/
+
 
