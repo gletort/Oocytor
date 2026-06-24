@@ -44,7 +44,7 @@ public class Structures
 {
 	ImagePlus ip;
 
-	public void distanceStructuresToEdge( ImagePlus ip, Roi roi, Roi only, ResultsTable myrt )
+	public void distanceStructuresToEdge( ImagePlus ip, Roi roi, Roi only, ResultsTable myrt, String path )
 	{
 		ip.setTitle("cur");
 		IJ.run(ip, "FeatureJ Structure", "smallest smoothing=1.0 integration=3.0");
@@ -53,12 +53,13 @@ public class Structures
 		only.setImage(small);
 		Prefs.blackBackground = true;
 		small.setRoi(only);
-		IJ.setAutoThreshold(small, "Mean");
+		IJ.setAutoThreshold(small, "Mean dark");
 		small.setRoi(only);
 		IJ.run(small, "Convert to Mask", "");
                 
-                //small.show();
-                //new WaitForUserDialog("dist").show();
+        //small.show();
+        //new WaitForUserDialog("dist").show();
+		//IJ.save( small, path+"_particles.tif" );
                 
 		roi.setImage(small);
 		small.setRoi(roi);

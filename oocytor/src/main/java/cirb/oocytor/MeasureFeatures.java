@@ -678,6 +678,7 @@ public class MeasureFeatures implements PlugIn
 	
 	public void structureNearCortex(ImagePlus img, int i, ResultsTable myrt)
 	{
+		String path = resdir+File.separator+purname;
 		rm.select(i);
 		Roi cur = rm.getRoi(i);
 		int slice = cur.getPosition();
@@ -695,7 +696,7 @@ public class MeasureFeatures implements PlugIn
 		else cleaned = cur;
 
 		Structures struc = new Structures();
-		struc.distanceStructuresToEdge(imslice, cur, cleaned, myrt);			
+		struc.distanceStructuresToEdge(imslice, cur, cleaned, myrt, path);			
 		
 		IJ.run(imslice, "Select None", "");
 		double[] part = struc.particleSizes(imslice, cur, cleaned);			
