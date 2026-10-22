@@ -59,7 +59,7 @@ public class Structures
                 
         //small.show();
         //new WaitForUserDialog("dist").show();
-		//IJ.save( small, path+"_particles.tif" );
+        //IJ.save( small, path+"_particles.tif" );
                 
 		roi.setImage(small);
 		small.setRoi(roi);
