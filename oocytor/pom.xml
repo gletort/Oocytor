@@ -12,7 +12,7 @@
 
     <groupId>cirb</groupId>
     <artifactId>oocytor_</artifactId>
-    <version>0.8-SNAPSHOT</version>
+    <version>0.8</version>
     <packaging>jar</packaging>
    
    <name>Oocytor</name>
@@ -72,7 +72,7 @@
 		<developerConnection>
 				scm:git:git@github.com:gletort/Oocytor</developerConnection>
 		<url>https://github.com/gletort/Oocytor</url>
-	  <tag>HEAD</tag>
+	  <tag>oocytor_-0.8</tag>
   </scm>
   
   <issueManagement>
