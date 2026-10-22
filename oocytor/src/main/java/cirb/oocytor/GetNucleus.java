@@ -242,13 +242,13 @@ public class GetNucleus implements PlugIn
 		
 		Environment env = null;
 		try {
-			env = Appose // the builder
+			Environment aenv = Appose // the builder
 					.pixi( this.getClass().getResource("pixi.toml") ) // we chose pixi as the environment manager
 					.subscribeProgress( Utils::showProgress ) // report progress visually
 					.subscribeOutput( Utils::showProgress ) // report output visually
-					.subscribeError( IJ::log ) // log problems
-			        .environment( envName )  // choose env based on OS (to get cuda or not)
+					.subscribeError( IJ::log ) // log problem
 					.build();
+			env = aenv.activate(envName);
 		} 
 		catch (Exception e) 
 		{

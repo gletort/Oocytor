@@ -96,13 +96,13 @@ public class RunUNet
 		
         Environment env = null;
 		try {
-			env = Appose // the builder
+			Environment apposenv = Appose // the builder
 					.pixi( this.getClass().getResource("pixi.toml") ) // we chose pixi as the environment manager
 					.subscribeProgress( Utils::showProgress ) // report progress visually
 					.subscribeOutput( Utils::showProgress ) // report output visually
 					.subscribeError( IJ::log ) // log problems
-			        .environment( envName )  // choose env based on OS (to get cuda or not)
-					.build();
+			        .build();
+			env = apposenv.activate(envName);
 		} 
 		catch (Exception e) 
 		{
