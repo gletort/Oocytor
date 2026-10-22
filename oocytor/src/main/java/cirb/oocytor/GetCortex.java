@@ -735,8 +735,10 @@ public class GetCortex implements PlugIn
 			ask_directory = false;
 			dir = IJ.getDirectory( "image" );
 			if (dir == null || dir == "")
+			{
 				dir = IJ.getDirectory("current");
 				IJ.log( "Results will be saved in "+dir );
+			}
 		}
         
         //modeldir = IJ.getDirectory("imagej")+File.separator+"models"+File.separator+arg+File.separator;

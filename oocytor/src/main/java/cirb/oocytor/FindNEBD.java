@@ -262,12 +262,15 @@ public class FindNEBD implements PlugIn
     		if ( imp == null )
     		{
     			ask_directory = true;
-    		}
-    		else
+    		}else
     		{
     			ask_directory = false;
     			dir = IJ.getDirectory( "image" );
-    			//System.out.println( "Image located in "+dir );
+    			if (dir == null || dir == "")
+    			{
+    				dir = IJ.getDirectory("current");
+    				IJ.log( "Results will be saved in "+dir );
+    			}
     		}
     		
             if (!getParameters()) return;

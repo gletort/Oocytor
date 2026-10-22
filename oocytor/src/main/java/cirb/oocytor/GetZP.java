@@ -661,7 +661,11 @@ public class GetZP implements PlugIn
 		{
 			ask_directory = false;
 			dir = IJ.getDirectory( "image" );
-			//System.out.println( "Image located in "+dir );
+			if (dir == null || dir == "")
+			{
+				dir = IJ.getDirectory("current");
+				IJ.log( "Results will be saved in "+dir );
+			}
 		}
 		
 		// get parameters, initialize

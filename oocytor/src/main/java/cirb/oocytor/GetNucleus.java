@@ -396,6 +396,16 @@ public class GetNucleus implements PlugIn
 		{
 			ask_directory = true;
 		}
+		else
+		{
+			ask_directory = false;
+			dir = IJ.getDirectory( "image" );
+			if (dir == null || dir == "")
+			{
+				dir = IJ.getDirectory("current");
+				IJ.log( "Results will be saved in "+dir );
+			}
+		}
 		
        // get parameters, initialize
 		if ( !getParameters() ) { return; }
