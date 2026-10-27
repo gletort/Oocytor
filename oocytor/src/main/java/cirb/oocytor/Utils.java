@@ -1006,7 +1006,7 @@ public class Utils
 	            while ((entry = zis.getNextEntry()) != null) 
 	            {
 	                Path filePath = Paths.get( destinationDir, entry.getName()) ;
-	                //System.out.println(""+entry.getName());
+	                System.out.println(""+entry.getName());
 	                
 	                // Security check
 	                if ( !filePath.normalize().startsWith(destinationDir) ) 
