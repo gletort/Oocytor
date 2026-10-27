@@ -96,7 +96,7 @@ public class GetCortex implements PlugIn
 	private boolean ask_directory = false; // if work on opened image, or on a folder
 	private boolean save_rois = true; // save results ROI to a zip file
     final ImageIcon icon = new ImageIcon(this.getClass().getResource("/oo_logo.png"));
-    private String[] models = {"cortex/mouse", "cortex/general", "other_model"};
+    private String[] models = {"cortex/mouse", "cortex/general", "cortex/human", "other_model"};
     private String custom_dir = ""; // if model custom is custom_model, path to it
     private boolean standardize = false; // standardize image before cnn for some models
     
