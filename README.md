@@ -37,6 +37,7 @@ To use it, the plugin ask for 3 parameters:
 
 ![gui cortex](./imgs/interfaceCortex.png?raw=true "Cortex option interface")
 
+_Note that the first time you run it, Oocytor has to install a python environment to run the segmentation models, through Appose. This can take some time, but only the first time it is used._
 
 ##### Models proposed
 We tested different networks trained on either mouse and human data, or on mouse, human and sea urchin data (see our publication for more details).
@@ -48,6 +49,7 @@ Available models are:
 
 * `cortex/mouse`: to segment Oocyte membrane, trained on mouse and human oocyte data, with more representation from mouse data.
 * `cortex/general`: to segment Oocyte membrane, trained on mouse/human/sea urchins data (called `full` in earlier versions).
+* `cortex/human`: to segement Oocytor membrane, trained on human data
 
 In earlier version:
 In early versions of our `models/cortex` folder of this repository, we put the 3 different types of networks available: `full` has been trained with all data, `init` was trained on mouse and human data, and `retrained` was focused on sea urchin data.
@@ -64,6 +66,8 @@ From Oocytor version 0.6, additional options are available:
 
 * `locate`: first estimate where is the oocyte in the image (there should be only one oocyte) and crop around it before to run the neural networks. This allows for a better detection for large images where the oocyte is only a small part of the full image. The results will be put back to the original image.
 * `zp boundary`: by default, this option is set to `Both` to save both ZP inner and outer boundaries in the segmentation. To measure the features with Oocytor afterwards, both segmentations are needed. However if you only need to segment one boundary and do not use the feature measurement, you can choose to save only one of the two contour with this parameter.
+
+_Note that the first time you run it, Oocytor has to install a python environment to run the segmentation models, through Appose. This can take some time, but only the first time it is used._
 
 #### Neural networks used for segmentation
 To perform the segmentation, we used neural networks trained on thausend images of mouse and human oocytes acquired in transmitted light. However it might be necessary to retrain it to adapt it to oocyte images, particularly if they are quite different from the one used for the training. 
@@ -91,6 +95,7 @@ Go to `Help>Update`, then select `Manage Update Sites`
 Add the new update site `OocyteJ`, select `Apply` and restart Fiji.
 
 You can also download the source code and compile it directly. As a lot of Fiji plugins, it is organized as a `Maven` project.
+The overall installation process should take less than 5-10 min. 
 
 ### Older versions
 To use a version of Oocytor anterior at version 1.0:
