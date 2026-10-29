@@ -131,9 +131,8 @@ Other macros will be added while developping `Oocytor` and of course feel free t
 <br>[J Cell Sci jcs.260281.](https://journals.biologists.com/jcs/article/doi/10.1242/jcs.260281/275608/An-interpretable-and-versatile-machine-learning) doi:10.1242/jcs.260281
  
 ## License
-Oocytor is open source, deploy under the BSD3-Clause License, see here [oocytor/LICENSE.txt](https://github.com/gletort/Oocytor/blob/main/oocytor/LICENSE.txt)
+Oocytor is open source, deployed under the BSD3-Clause License, see here [oocytor/LICENSE.txt](https://github.com/gletort/Oocytor/blob/main/oocytor/LICENSE.txt)
 
 ## Remarks
 
 This plugin was developped in the [Terret/Verlhac](https://www.college-de-france.fr/site/en-cirb/Terret-Verlhac.htm "website team") team and the imaging facility [Orion](http://orion-cirb.fr/ "orion website") at the Centre de Recherche Interdisciplinaire en Biologie in the College de France.
-`Oocytor` is freely available open-source under the GNU GPL v3.0 License (see License file). 
