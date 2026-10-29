@@ -9,7 +9,10 @@ Fiji plugin to segment oocyte and zona pellucida contours from transmitted light
 	* [Features](#features)
  * [Installation](#installation)
 	* [Usage](#use)
+ 	* [Dependencies](#dependencies)
+	* [System requirements](#System-requirements)	
 	* [Macros](#macros)
+ 
  * [Dataset](#dataset)
  * [References](#references)
  * [License](#license)
@@ -104,6 +107,13 @@ For the previous versions, you also need this dependency:
 ### Dependencies
 Oocytor uses the following Fiji plugins:
 * [FeatureJ](https://imagescience.org/meijering/software/featurej/ "FeatureJ website"): this plugin in the features part only. Add the `.jar` files given in FeatureJ website to the `plugins` folder of Fiji.		
+
+### System requirements
+Oocytor is a Fiji plugin, thus compatible with all the main operating systems (MacOS, Linux, Windows). 
+It is based on deep learning on python, but thanks to [Appose](https://apposed.org/) it is all handled by the plugin.
+The only requirement is for Fiji installation to be based on a recent Java (at least Java 21). 
+A recent Fiji can be downloaded [here](https://imagej.net/software/fiji/downloads), from the `Fiji Latest` column if necessary.
+
 
 ### Use
 Once installed, the plugin can be found in Fiji in the `Plugins>Oocytes>Oocytor` menu.
