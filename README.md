@@ -12,6 +12,7 @@ Fiji plugin to segment oocyte and zona pellucida contours from transmitted light
 	* [Macros](#macros)
  * [Dataset](#dataset)
  * [References](#references)
+ * [License](#license)
  * [Remarks](#remarks)
 
 ## Presentation
@@ -129,6 +130,8 @@ Other macros will be added while developping `Oocytor` and of course feel free t
 <br>Gaelle Letort, Adrien Eichmuller, Christelle Da Silva, Elvira Nikalayevich, Flora Crozet, Jeremy Salle, Nicolas Minc, Elsa Labrune, Jean-Philippe Wolf, Marie-Emilie Terret, Marie-Helene Verlhac
 <br>[J Cell Sci jcs.260281.](https://journals.biologists.com/jcs/article/doi/10.1242/jcs.260281/275608/An-interpretable-and-versatile-machine-learning) doi:10.1242/jcs.260281
  
+## License
+Oocytor is open source, deploy under the BSD3-Clause License, see here [oocytor/LICENSE.txt](https://github.com/gletort/Oocytor/blob/main/oocytor/LICENSE.txt)
 
 ## Remarks
 
