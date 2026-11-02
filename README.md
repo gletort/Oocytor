@@ -14,6 +14,7 @@ Fiji plugin to segment oocyte and zona pellucida contours from transmitted light
 	* [Macros](#macros)
  
  * [Dataset](#dataset)
+ * [Tutorial](#tutorial)
  * [References](#references)
  * [License](#license)
  * [Remarks](#remarks)
@@ -115,9 +116,13 @@ Oocytor uses the following Fiji plugins:
 
 ### System requirements
 Oocytor is a Fiji plugin, thus compatible with all the main operating systems (MacOS, Linux, Windows). 
+
 It is based on deep learning on python, but thanks to [Appose](https://apposed.org/) it is all handled by the plugin.
-The only requirement is for Fiji installation to be based on a recent Java (at least Java 21). 
+The only requirement is for Fiji installation to be **based on a recent Java (at least Java 21)**. 
 A recent Fiji can be downloaded [here](https://imagej.net/software/fiji/downloads), from the `Fiji Latest` column if necessary.
+
+Oocytor (version from the Update site `OocyteJ`) has been tested on Fiji/ImageJ 1.54p with Java 21.0.7. 
+Earlier versions of Oocytor were tested on Fiji/ImageJ 1.54n with Java 1.8.0 (compiled version, with the `.jar` file proposed in this repository).
 
 
 ### Use
@@ -138,6 +143,23 @@ Other macros will be added while developping `Oocytor` and of course feel free t
 ## Dataset
 - Movies of mouse oocytes maturation acquired in transmitted light are available on [zenodo](https://zenodo.org/record/6502852#.Yp3bfyY68nQ). 
 - Dataset of oocytes (mouse, human and sea urchin) with the corresponding segmentation of the cortex are available on [zenodo](https://zenodo.org/record/6502830#.Yp3bJiY68nQ).
+
+## Tutorial
+
+### Measure Oocyte area
+1 - Choose one movie of mouse oocyte maturation from the zenodo dataset [zenodo](https://zenodo.org/record/6502852#.Yp3bfyY68nQ) or use your own image/movie.
+2 - Open the selected movie/image with Fiji
+3 - Go to `Plugins>Oocytes>Oocytor>Get Cortex...`
+4 - A parameter window opens up to let you tune the segmentation. Choose the relevant parameters, see [Oocyte cortex segmentation](#oocyte-contour-segmentation) for the parameters description, or keep the default values.
+If it's mouse oocyte image/movie, choose `cortex/mouse` for the model (neural network that will calculate the segmentation).
+Check that `save_rois` is selected.
+Press `Ok`.
+
+In 1-5 min (depending if you have a GPU and the size of your image/movie), the segmentation should be done.
+The contour of the cortex will be overlaid on your image/movie as ROIs in the Roi Manager.
+
+5 - To measure the Oocyte area based on this segmentation, either press `m` (for measure) and Fiji will measure it directly (you can set what to measure in `Set measurements` in Fiji). 
+Or to measure several features through Oocytor, go to `Plugins>Oocytes>Oocytor>Measure features...` and select the features to measure, e.g. here `oocyte_feature` to obtain the oocyte area.
 
 
 ## References
