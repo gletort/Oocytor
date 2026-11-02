@@ -147,8 +147,11 @@ Other macros will be added while developping `Oocytor` and of course feel free t
 
 ### Measure Oocyte area
 1 - Choose one movie of mouse oocyte maturation from the zenodo dataset [zenodo](https://zenodo.org/record/6502852#.Yp3bfyY68nQ) or use your own image/movie.
+
 2 - Open the selected movie/image with Fiji
+
 3 - Go to `Plugins>Oocytes>Oocytor>Get Cortex...`
+
 4 - A parameter window opens up to let you tune the segmentation. Choose the relevant parameters, see [Oocyte cortex segmentation](#oocyte-contour-segmentation) for the parameters description, or keep the default values.
 If it's mouse oocyte image/movie, choose `cortex/mouse` for the model (neural network that will calculate the segmentation).
 Check that `save_rois` is selected.
@@ -160,8 +163,13 @@ The contour of the cortex will be overlaid on your image/movie as ROIs in the Ro
 5 - To measure the Oocyte area based on this segmentation, either press `m` (for measure) and Fiji will measure it directly (you can set what to measure in `Set measurements` in Fiji). 
 Or to measure several features through Oocytor, go to `Plugins>Oocytes>Oocytor>Measure features...` and select the features to measure, e.g. here `oocyte_feature` to obtain the oocyte area.
 
+It should take a 1-5 min to compute, depending on the size of your dataset and if you selected only one feature or more. 
+Some feature, like the `spatial` feature or PIV feature are much slower to compute.
+
 6 - The results will be saved in a folder called `measures`, with one file by image/movies and type of features. 
+It will be a csv file with one row by time point if it's a movie, and each column will be the value of one feature.
 These files can be compiled together in a unique dataset with R scripts given in this repository.
+
 
 ## References
 **An interpretable and versatile machine learning approach for oocyte phenotyping**
