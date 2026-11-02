@@ -12,7 +12,6 @@ Fiji plugin to segment oocyte and zona pellucida contours from transmitted light
  	* [Dependencies](#dependencies)
 	* [System requirements](#System-requirements)	
 	* [Macros](#macros)
- 
  * [Dataset](#dataset)
  * [Tutorial](#tutorial)
  * [References](#references)
@@ -161,6 +160,8 @@ The contour of the cortex will be overlaid on your image/movie as ROIs in the Ro
 5 - To measure the Oocyte area based on this segmentation, either press `m` (for measure) and Fiji will measure it directly (you can set what to measure in `Set measurements` in Fiji). 
 Or to measure several features through Oocytor, go to `Plugins>Oocytes>Oocytor>Measure features...` and select the features to measure, e.g. here `oocyte_feature` to obtain the oocyte area.
 
+6 - The results will be saved in a folder called `measures`, with one file by image/movies and type of features. 
+These files can be compiled together in a unique dataset with R scripts given in this repository.
 
 ## References
 **An interpretable and versatile machine learning approach for oocyte phenotyping**
